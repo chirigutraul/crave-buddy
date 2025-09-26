@@ -1,1 +1,121 @@
 @import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap");
+
+body {
+  font-family: "Roboto", sans-serif;
+  font-weight: 700;
+}
+
+:root {
+  --line-height: 1.2;
+
+  /* Color Palette */
+  --color-primary: #78c841;
+  --color-secondary: #b4e50d;
+  --color-accent-1: #ff982f;
+  --color-accent-2: #fb4141;
+
+  /* Font size scale (mobile first) */
+  --font-size-paragraph: 16px;
+  --font-size-h6: calc(var(--font-size-paragraph) * 1.125);
+  --font-size-h5: calc(var(--font-size-h6) * 1.125);
+  --font-size-h4: calc(var(--font-size-h5) * 1.125);
+  --font-size-h3: calc(var(--font-size-h4) * 1.125);
+  --font-size-h2: calc(var(--font-size-h3) * 1.125);
+  --font-size-h1: calc(var(--font-size-h2) * 1.125);
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --font-size-paragraph: 16px;
+    --font-size-h6: calc(var(--font-size-paragraph) * 1.25);
+    --font-size-h5: calc(var(--font-size-h6) * 1.25);
+    --font-size-h4: calc(var(--font-size-h5) * 1.25);
+    --font-size-h3: calc(var(--font-size-h4) * 1.25);
+    --font-size-h2: calc(var(--font-size-h3) * 1.25);
+    --font-size-h1: calc(var(--font-size-h2) * 1.25);
+  }
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  line-height: var(--line-height);
+}
+h2 {
+  font-size: var(--font-size-h2);
+  line-height: var(--line-height);
+}
+h3 {
+  font-size: var(--font-size-h3);
+  line-height: var(--line-height);
+}
+h4 {
+  font-size: var(--font-size-h4);
+  line-height: var(--line-height);
+}
+h5 {
+  font-size: var(--font-size-h5);
+  line-height: var(--line-height);
+}
+h6 {
+  font-size: var(--font-size-h6);
+  line-height: var(--line-height);
+}
+p {
+  font-size: var(--font-size-paragraph);
+  line-height: var(--line-height);
+  font-weight: 500;
+}
+
+/* Font family settings */
+
+/* Custom Color Utilities */
+.bg-primary {
+  background-color: var(--color-primary);
+}
+
+.bg-secondary {
+  background-color: var(--color-secondary);
+}
+
+.bg-accent-1 {
+  background-color: var(--color-accent-1);
+}
+
+.bg-accent-2 {
+  background-color: var(--color-accent-2);
+}
+
+/* Text Color Utilities */
+.text-primary {
+  color: var(--color-primary);
+}
+
+.text-secondary {
+  color: var(--color-secondary);
+}
+
+.text-accent-1 {
+  color: var(--color-accent-1);
+}
+
+.text-accent-2 {
+  color: var(--color-accent-2);
+}
+
+/* Border Color Utilities */
+.border-primary {
+  border-color: var(--color-primary);
+}
+
+.border-secondary {
+  border-color: var(--color-secondary);
+}
+
+.border-accent-1 {
+  border-color: var(--color-accent-1);
+}
+
+.border-accent-2 {
+  border-color: var(--color-accent-2);
+}
