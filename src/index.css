@@ -1,5 +1,5 @@
-@import "tailwindcss";
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap");
+@import "tailwindcss";
 
 body {
   font-family: "Roboto", sans-serif;
@@ -60,6 +60,7 @@ h5 {
 h6 {
   font-size: var(--font-size-h6);
   line-height: var(--line-height);
+  font-weight: 500;
 }
 p {
   font-size: var(--font-size-paragraph);
