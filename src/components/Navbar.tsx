@@ -9,7 +9,7 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="h-16 px-16 py-2 flex items-center justify-between border-b border-gray-200">
+    <nav className="h-16 px-16 py-2 flex items-center justify-between border-b border-gray-200 bg-neutral-50">
       <img src={logo64} alt="CraveBuddy Logo" className="h-full" />
 
       <div className="flex gap-8">
