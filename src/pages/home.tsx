@@ -6,7 +6,7 @@ import preparation from "../assets/preparation.jpg";
 import smartSwaps from "../assets/smart-swap.png";
 import howItWorks from "../assets/how-it-works.gif";
 import { useNavigate } from "react-router-dom";
-import { Button } from "../components/ui/button";
+import { Button } from "@/components/ui/button";
 function HeroSection() {
   const navigate = useNavigate();
 
