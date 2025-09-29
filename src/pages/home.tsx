@@ -6,8 +6,11 @@ import groceries from "../assets/groceries.jpg";
 import preparation from "../assets/preparation.jpg";
 import smartSwaps from "../assets/smart-swap.png";
 import howItWorks from "../assets/how-it-works.gif";
+import { useNavigate } from "react-router-dom";
 
 function HeroSection() {
+  const navigate = useNavigate();
+
   return (
     <div className="pt-16 pb-8 px-16 flex items-center justify-between gap-16">
       <div className="flex-1 max-w-2xl">
@@ -30,6 +33,7 @@ function HeroSection() {
           <Button
             variant="large"
             title="Get started"
+            onClick={() => navigate("/create-recipe")}
             className="bg-primary text-neutral-50 text-base hover:bg-green-500"
           />
           <Button
@@ -50,6 +54,8 @@ function HeroSection() {
 }
 
 function Features() {
+  const navigate = useNavigate();
+
   const features = [
     {
       title: "Auto-generated grocery list",
@@ -84,6 +90,7 @@ function Features() {
       <Button
         variant="large"
         title="Get started"
+        onClick={() => navigate("/create-recipe")}
         className="bg-primary text-neutral-50 hover:bg-neutral-500"
       />
     </section>

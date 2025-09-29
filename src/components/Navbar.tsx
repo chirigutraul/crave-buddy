@@ -1,5 +1,6 @@
 import Button from "./Button";
 import logo64 from "../assets/logo-64x64.png";
+import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const navLinks = [
@@ -7,6 +8,8 @@ const Navbar = () => {
     { label: "Features" },
     { label: "About" },
   ];
+
+  const navigate = useNavigate();
 
   return (
     <nav className="h-16 px-16 py-2 flex items-center justify-between border-b border-gray-200 bg-neutral-50">
@@ -28,6 +31,7 @@ const Navbar = () => {
         variant="small"
         title="Get started"
         className="bg-primary text-white hover:bg-green-500"
+        onClick={() => navigate("/create-recipe")}
       />
     </nav>
   );
