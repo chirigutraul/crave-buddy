@@ -1,6 +1,6 @@
-import Button from "./Button";
 import logo64 from "../assets/logo-64x64.png";
 import { useNavigate } from "react-router-dom";
+import { Button } from "./ui/button";
 
 const Navbar = () => {
   const navLinks = [
@@ -27,12 +27,9 @@ const Navbar = () => {
         ))}
       </div>
 
-      <Button
-        variant="small"
-        title="Get started"
-        className="bg-primary text-white hover:bg-green-500"
-        onClick={() => navigate("/create-recipe")}
-      />
+      <Button variant="default" onClick={() => navigate("/create-recipe")}>
+        Get started
+      </Button>
     </nav>
   );
 };

@@ -1,5 +1,4 @@
 import Layout from "../layouts/Layout";
-import Button from "../components/Button";
 import logo128 from "../assets/logo-128x128.png";
 import heroPicture from "../assets/hero-picture.png";
 import groceries from "../assets/groceries.jpg";
@@ -7,7 +6,7 @@ import preparation from "../assets/preparation.jpg";
 import smartSwaps from "../assets/smart-swap.png";
 import howItWorks from "../assets/how-it-works.gif";
 import { useNavigate } from "react-router-dom";
-
+import { Button } from "../components/ui/button";
 function HeroSection() {
   const navigate = useNavigate();
 
@@ -31,16 +30,19 @@ function HeroSection() {
 
         <div className="flex gap-4">
           <Button
-            variant="large"
-            title="Get started"
+            size="lg"
+            variant="default"
             onClick={() => navigate("/create-recipe")}
-            className="bg-primary text-neutral-50 text-base hover:bg-green-500"
-          />
+          >
+            <h6>Get started</h6>
+          </Button>
           <Button
-            variant="large"
-            title="Demo"
-            className="bg-neutral-400 text-neutral-50 hover:bg-neutral-500"
-          />
+            size="lg"
+            variant="secondary"
+            onClick={() => navigate("/create-recipe")}
+          >
+            <h6>Demo</h6>
+          </Button>
         </div>
       </div>
 
@@ -87,12 +89,9 @@ function Features() {
           </div>
         ))}
       </div>
-      <Button
-        variant="large"
-        title="Get started"
-        onClick={() => navigate("/create-recipe")}
-        className="bg-primary text-neutral-50 hover:bg-neutral-500"
-      />
+      <Button variant="default" onClick={() => navigate("/create-recipe")}>
+        Get started
+      </Button>
     </section>
   );
 }
