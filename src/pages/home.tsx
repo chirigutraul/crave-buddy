@@ -5,6 +5,7 @@ import heroPicture from "../assets/hero-picture.png";
 import groceries from "../assets/groceries.jpg";
 import preparation from "../assets/preparation.jpg";
 import smartSwaps from "../assets/smart-swap.png";
+import howItWorks from "../assets/how-it-works.gif";
 
 function HeroSection() {
   return (
@@ -19,7 +20,7 @@ function HeroSection() {
           Smart swaps. Simple meal plans. Real progress.
         </h4>
 
-        <h6 className="mb-8 text-gray-800">
+        <h6 className="mb-8 text-gray-700">
           Turn any recipe into a healthy, easy-to-follow meal plan:
           auto-generated grocery lists, per-serving nutrition estimates, and
           smart ingredient swaps that cut calories without sacrificing taste.
@@ -89,11 +90,29 @@ function Features() {
   );
 }
 
+function HowItWorks() {
+  return (
+    <section className="flex flex-col items-center gap-8 py-8 px-16">
+      <h3>How it works?</h3>
+      <h5 className="max-w-3xl text-center text-gray-800">
+        CraveBuddy leverages the power of Chrome’s built-in AI API’s. All your
+        cravings remain private.
+      </h5>
+      <img
+        src={howItWorks}
+        alt="How it works"
+        className="mx-auto mb-4 rounded-lg max-h-96"
+      />
+    </section>
+  );
+}
+
 function Home() {
   return (
     <Layout>
       <HeroSection />
       <Features />
+      <HowItWorks />
     </Layout>
   );
 }
