@@ -56,7 +56,7 @@ export function RecipesSidebar() {
   ];
 
   return (
-    <Sidebar>
+    <Sidebar variant="translucent">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>My recipes</SidebarGroupLabel>

@@ -2,6 +2,8 @@ import RecipeLayout from "../layouts/RecipeLayout";
 import { Textarea } from "@/components/ui/textarea";
 import RecipeComparison from "@/components/RecipeComparison";
 import type { Recipe } from "@/types";
+import { CheckboxList } from "@/components/CheckboxList";
+import { Button } from "@/components/ui/button";
 
 function CreateRecipe() {
   const clasicRecipe: Recipe = {
@@ -63,18 +65,39 @@ function CreateRecipe() {
 
   return (
     <RecipeLayout>
-      <div className="text-neutral-800">
-        <h5>Start planning your meal</h5>
-        <div>
-          <p>What are you craving today?</p>
-          <Textarea
-            placeholder="Write your cravings here.."
-            className="w-96 h-32"
-          />
-          <RecipeComparison
-            clasicRecipe={clasicRecipe}
-            improvedRecipe={improvedRecipe}
-          />
+      <div className="max-w-5xl p-8 rounded-2xl bg-neutral-50/90 border-1 border-neutral-400 shadow-xl drop-shadow-xl">
+        <h5 className="mb-4">Start planning your meal</h5>
+        <div className="flex gap-16">
+          <div className="flex flex-col gap-4">
+            <div>
+              <p className="mb-2">What are you craving today?</p>
+              <Textarea
+                placeholder="Write your cravings here.."
+                className="w-96 h-32"
+              />
+            </div>
+            <RecipeComparison
+              clasicRecipe={clasicRecipe}
+              improvedRecipe={improvedRecipe}
+            />
+            <p className="font-medium">
+              Results of smart swap: you reduced the calories by 220kcal per
+              portion and lowered the fats
+            </p>
+          </div>
+          <div className="flex flex-col gap-8">
+            <CheckboxList
+              title="Grocery List"
+              items={improvedRecipe.ingredients}
+            />
+            <CheckboxList
+              title="Grocery List"
+              items={improvedRecipe.ingredients}
+            />
+          </div>
+        </div>
+        <div className="flex justify-end w-full">
+          <Button>Save recipe</Button>
         </div>
       </div>
     </RecipeLayout>
