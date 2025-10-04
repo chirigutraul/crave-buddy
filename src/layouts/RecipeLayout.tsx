@@ -13,7 +13,7 @@ const RecipeLayout = ({ children }: RecipeLayoutProps) => {
       <SidebarProvider>
         <RecipesSidebar />
         <SidebarTrigger />
-        <main className="flex-1 pl-64">{children}</main>
+        <main className="flex-1 pl-1 pt-8">{children}</main>
       </SidebarProvider>
     </div>
   );
