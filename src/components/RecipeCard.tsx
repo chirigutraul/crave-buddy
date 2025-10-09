@@ -2,10 +2,11 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import fruitSalad from "../assets/fruit-salad.jpg";
 import type { Recipe } from "@/types";
 import { ArrowDown, ArrowUp } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface RecipeCardProps {
-  recipe?: Recipe;
-  comparisonRecipe?: Recipe;
+  recipe?: Omit<Recipe, "id" | "image">;
+  comparisonRecipe?: Omit<Recipe, "id" | "image">;
   title?: string;
 }
 
@@ -72,7 +73,7 @@ function RecipeCard({ recipe, comparisonRecipe, title }: RecipeCardProps) {
 
   const getComparisonValue = (
     label: string,
-    recipe: Recipe
+    recipe: Omit<Recipe, "id" | "image">
   ): number | undefined => {
     switch (label) {
       case "Calories":
@@ -128,13 +129,49 @@ function RecipeCard({ recipe, comparisonRecipe, title }: RecipeCardProps) {
   return (
     <Card className="w-64 py-4 gap-4">
       <CardHeader className="px-4">
-        <img src={fruitSalad} alt="Fruit Salad" className="rounded-lg" />
+        <img
+          src={fruitSalad}
+          alt="Fruit Salad"
+          className="rounded-lg w-full aspect-square object-cover"
+        />
       </CardHeader>
       <CardContent className="px-4">
         {title && <h6 className="mb-3 text-neutral-800">{title}</h6>}
         <p className="mb-2 font-semibold">Nutritional values:</p>
         <ul className="list-none font-medium text-neutral-500">
           {metrics.map(renderNutritionalValue)}
+        </ul>
+      </CardContent>
+    </Card>
+  );
+}
+
+export function RecipeCardSkeleton() {
+  return (
+    <Card className="w-64 py-4 gap-4">
+      <CardHeader className="px-4">
+        <Skeleton className="w-full aspect-square rounded-lg" />
+      </CardHeader>
+      <CardContent className="px-4">
+        <Skeleton className="h-[24px] w-32 mb-3" />
+        <Skeleton className="h-[19.2px] w-40 mb-2" />
+        <ul className="list-none space-y-2">
+          <li className="flex justify-between items-center">
+            <Skeleton className="h-[20px] w-20" />
+            <Skeleton className="h-[20px] w-24" />
+          </li>
+          <li className="flex justify-between items-center">
+            <Skeleton className="h-[20px] w-16" />
+            <Skeleton className="h-[20px] w-20" />
+          </li>
+          <li className="flex justify-between items-center">
+            <Skeleton className="h-[20px] w-28" />
+            <Skeleton className="h-[20px] w-20" />
+          </li>
+          <li className="flex justify-between items-center">
+            <Skeleton className="h-[20px] w-12" />
+            <Skeleton className="h-[20px] w-20" />
+          </li>
         </ul>
       </CardContent>
     </Card>

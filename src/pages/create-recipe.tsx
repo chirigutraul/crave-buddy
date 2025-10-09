@@ -1,8 +1,10 @@
 import RecipeLayout from "../layouts/RecipeLayout";
 import { Textarea } from "@/components/ui/textarea";
-import RecipeComparison from "@/components/RecipeComparison";
-import type { Recipe } from "@/types";
-import { CheckboxList } from "@/components/CheckboxList";
+import RecipeComparison, {
+  RecipeComparisonSkeleton,
+} from "@/components/RecipeComparison";
+import type { Recipe, RecipePair } from "@/types";
+import { CheckboxList, CheckboxListSkeleton } from "@/components/CheckboxList";
 import { Button } from "@/components/ui/button";
 import { PromptApiService } from "@/services/prompt-api";
 import { useEffect, useState, useRef } from "react";
@@ -13,6 +15,9 @@ function CreateRecipe() {
   const [cravings, setCravings] = useState("");
   const [isReady, setIsReady] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedRecipes, setGeneratedRecipes] = useState<RecipePair | null>(
+    null
+  );
 
   const clasicRecipe: Recipe = {
     id: "1",
@@ -83,6 +88,8 @@ function CreateRecipe() {
       console.log("Parsed recipes:", recipes);
       console.log("Classic Recipe:", recipes.clasicRecipe);
       console.log("Improved Recipe:", recipes.improvedRecipe);
+
+      setGeneratedRecipes(recipes);
     } catch (error) {
       console.error("Error generating meal:", error);
     } finally {
@@ -112,9 +119,9 @@ function CreateRecipe() {
 
   return (
     <RecipeLayout>
-      <div className="max-w-5xl p-8 rounded-2xl bg-neutral-50/90 border-1 border-neutral-400 shadow-xl drop-shadow-xl">
+      <div className="w-full p-8 rounded-2xl bg-neutral-50/90 border-1 border-neutral-400 shadow-xl drop-shadow-xl">
         <h5 className="mb-4">Start planning your meal</h5>
-        <div className="flex gap-16">
+        <div className="flex gap-16 justify-between">
           <div className="flex flex-col gap-4">
             <div className="w-96">
               <p className="mb-2">What are you craving today?</p>
@@ -134,24 +141,49 @@ function CreateRecipe() {
                 </Button>
               </div>
             </div>
-            <RecipeComparison
-              clasicRecipe={clasicRecipe}
-              improvedRecipe={improvedRecipe}
-            />
-            <p className="font-medium">
-              Results of smart swap: you reduced the calories by 220kcal per
-              portion and lowered the fats
-            </p>
+            {isGenerating ? (
+              <RecipeComparisonSkeleton />
+            ) : (
+              <RecipeComparison
+                clasicRecipe={generatedRecipes?.clasicRecipe || clasicRecipe}
+                improvedRecipe={
+                  generatedRecipes?.improvedRecipe || improvedRecipe
+                }
+              />
+            )}
+            {generatedRecipes && (
+              <p className="font-medium">
+                Results of smart swap: you reduced the calories by{" "}
+                {generatedRecipes.clasicRecipe.nutritionalValues.calories -
+                  generatedRecipes.improvedRecipe.nutritionalValues.calories}
+                kcal per portion and lowered the fats
+              </p>
+            )}
           </div>
           <div className="flex flex-col gap-8">
-            <CheckboxList
-              title="Grocery List"
-              items={improvedRecipe.ingredients}
-            />
-            <CheckboxList
-              title="Grocery List"
-              items={improvedRecipe.ingredients}
-            />
+            {isGenerating ? (
+              <>
+                <CheckboxListSkeleton title="Grocery List" />
+                <CheckboxListSkeleton title="Preparation Steps" />
+              </>
+            ) : (
+              <>
+                <CheckboxList
+                  title="Grocery List"
+                  items={
+                    generatedRecipes?.improvedRecipe.ingredients ||
+                    improvedRecipe.ingredients
+                  }
+                />
+                <CheckboxList
+                  title="Preparation Steps"
+                  items={
+                    generatedRecipes?.improvedRecipe.instructions ||
+                    improvedRecipe.instructions
+                  }
+                />
+              </>
+            )}
           </div>
         </div>
         <div className="flex justify-end w-full">
