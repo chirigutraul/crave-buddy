@@ -4,8 +4,16 @@ import RecipeComparison from "@/components/RecipeComparison";
 import type { Recipe } from "@/types";
 import { CheckboxList } from "@/components/CheckboxList";
 import { Button } from "@/components/ui/button";
+import { PromptApiService } from "@/services/prompt-api";
+import { useEffect, useState, useRef } from "react";
+import { parseRecipeResponse } from "@/lib/utils";
 
 function CreateRecipe() {
+  const promptApiServiceRef = useRef<PromptApiService | null>(null);
+  const [cravings, setCravings] = useState("");
+  const [isReady, setIsReady] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+
   const clasicRecipe: Recipe = {
     id: "1",
     image: "/placeholder-image.png",
@@ -63,18 +71,68 @@ function CreateRecipe() {
     },
   };
 
+  const generateMeal = async () => {
+    if (!cravings || !promptApiServiceRef.current) return;
+
+    try {
+      setIsGenerating(true);
+      const response = await promptApiServiceRef.current.getRecipe(cravings);
+      console.log("AI Response (raw):", response);
+
+      const recipes = parseRecipeResponse(response);
+      console.log("Parsed recipes:", recipes);
+      console.log("Classic Recipe:", recipes.clasicRecipe);
+      console.log("Improved Recipe:", recipes.improvedRecipe);
+    } catch (error) {
+      console.error("Error generating meal:", error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  useEffect(() => {
+    const initializeService = async () => {
+      try {
+        promptApiServiceRef.current = new PromptApiService();
+        const availability =
+          await promptApiServiceRef.current.getAvailability();
+        if (availability !== "available") {
+          console.log(`Prompt API is ${availability}. Please wait...`);
+        }
+
+        await promptApiServiceRef.current.init();
+        setIsReady(true);
+      } catch (error) {
+        console.error("Failed to initialize Prompt API:", error);
+      }
+    };
+
+    initializeService();
+  }, []);
+
   return (
     <RecipeLayout>
       <div className="max-w-5xl p-8 rounded-2xl bg-neutral-50/90 border-1 border-neutral-400 shadow-xl drop-shadow-xl">
         <h5 className="mb-4">Start planning your meal</h5>
         <div className="flex gap-16">
           <div className="flex flex-col gap-4">
-            <div>
+            <div className="w-96">
               <p className="mb-2">What are you craving today?</p>
               <Textarea
+                value={cravings}
+                onChange={(e) => setCravings(e.target.value)}
                 placeholder="Write your cravings here.."
-                className="w-96 h-32"
+                className="h-32 mb-2"
               />
+              <div className="flex justify-end">
+                <Button
+                  size="sm"
+                  onClick={() => generateMeal()}
+                  disabled={!isReady || !cravings || isGenerating}
+                >
+                  {isGenerating ? "Generating..." : "Generate meal"}
+                </Button>
+              </div>
             </div>
             <RecipeComparison
               clasicRecipe={clasicRecipe}
