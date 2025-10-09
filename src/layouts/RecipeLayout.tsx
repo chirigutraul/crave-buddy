@@ -24,7 +24,7 @@ const RecipeLayout = ({ children }: RecipeLayoutProps) => {
         <SidebarProvider>
           <RecipesSidebar />
           <SidebarTrigger />
-          <main className="flex-1 pl-1 pt-8">{children}</main>
+          <main className="pl-1 py-8">{children}</main>
         </SidebarProvider>
       </div>
     </div>
