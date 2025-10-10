@@ -157,20 +157,20 @@ export function RecipeCardSkeleton() {
         <Skeleton className="h-[19.2px] w-40 mb-2" />
         <ul className="list-none space-y-2">
           <li className="flex justify-between items-center">
-            <Skeleton className="h-[20px] w-20" />
-            <Skeleton className="h-[20px] w-24" />
+            <Skeleton className="h-[24px] w-20" />
+            <Skeleton className="h-[24px] w-24" />
           </li>
           <li className="flex justify-between items-center">
-            <Skeleton className="h-[20px] w-16" />
-            <Skeleton className="h-[20px] w-20" />
+            <Skeleton className="h-[24px] w-16" />
+            <Skeleton className="h-[24px] w-20" />
           </li>
           <li className="flex justify-between items-center">
-            <Skeleton className="h-[20px] w-28" />
-            <Skeleton className="h-[20px] w-20" />
+            <Skeleton className="h-[24px] w-28" />
+            <Skeleton className="h-[24px] w-20" />
           </li>
           <li className="flex justify-between items-center">
-            <Skeleton className="h-[20px] w-12" />
-            <Skeleton className="h-[20px] w-20" />
+            <Skeleton className="h-[24px] w-12" />
+            <Skeleton className="h-[24px] w-20" />
           </li>
         </ul>
       </CardContent>
