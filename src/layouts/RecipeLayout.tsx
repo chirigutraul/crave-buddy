@@ -20,7 +20,7 @@ const RecipeLayout = ({ children }: RecipeLayoutProps) => {
 
       {/* Content */}
       <div className="relative">
-        <Navbar />
+        <Navbar inRecipePage />
         <SidebarProvider>
           <RecipesSidebar />
           <SidebarTrigger />

@@ -7,11 +7,15 @@ import smartSwaps from "../assets/smart-swap.png";
 import howItWorks from "../assets/how-it-works.gif";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+
 function HeroSection() {
   const navigate = useNavigate();
 
   return (
-    <div className="pt-16 pb-8 px-16 flex items-center justify-between gap-16">
+    <section
+      id="home"
+      className="pt-16 pb-8 px-16 flex items-center justify-between gap-16"
+    >
       <div className="flex-1 max-w-2xl">
         <div className="flex items-center mb-4">
           <img src={logo128} alt="CraveBuddy Logo" className="w-16 h-16 mr-8" />
@@ -51,7 +55,7 @@ function HeroSection() {
         alt="CraveBuddy Hero"
         className="max-w-full max-h-[768px] h-auto rounded-xl"
       />
-    </div>
+    </section>
   );
 }
 
@@ -73,9 +77,12 @@ function Features() {
     },
   ];
   return (
-    <section className="flex flex-col items-center gap-8 py-8 px-16">
+    <section
+      id="features"
+      className="flex flex-col items-center gap-8 py-8 px-16 h-screen"
+    >
       <h3>Meal preparation made simple.</h3>
-      <div className="flex flex-row gap-16">
+      <div className="flex flex-row gap-16 h-full items-center">
         {features.map((feature) => (
           <div key={feature.title} className="flex flex-col gap-4">
             <div>
@@ -98,17 +105,22 @@ function Features() {
 
 function HowItWorks() {
   return (
-    <section className="flex flex-col items-center gap-8 py-8 px-16">
+    <section
+      id="about"
+      className="flex flex-col items-center gap-8 py-8 px-16 h-screen"
+    >
       <h3>How it works?</h3>
       <h5 className="max-w-3xl text-center text-gray-800">
         CraveBuddy leverages the power of Chrome’s built-in AI API’s. All your
         cravings remain private.
       </h5>
-      <img
-        src={howItWorks}
-        alt="How it works"
-        className="mx-auto mb-4 rounded-lg max-h-96"
-      />
+      <div className="flex justify-center items-center h-full">
+        <img
+          src={howItWorks}
+          alt="How it works"
+          className="mx-auto mb-4 rounded-lg max-h-96"
+        />
+      </div>
     </section>
   );
 }

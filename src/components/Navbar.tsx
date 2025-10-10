@@ -2,11 +2,16 @@ import logo64 from "../assets/logo-64x64.png";
 import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 
-const Navbar = () => {
+const Navbar = ({ inRecipePage = false }: { inRecipePage?: boolean }) => {
   const navLinks = [
     { label: "Home" },
     { label: "Features" },
     { label: "About" },
+  ];
+
+  const userLinks = [
+    { label: "Generate meal", link: "/create-recipe" },
+    { label: "My week", link: "/my-week" },
   ];
 
   const navigate = useNavigate();
@@ -16,15 +21,25 @@ const Navbar = () => {
       <img src={logo64} alt="CraveBuddy Logo" className="h-full" />
 
       <div className="flex gap-8">
-        {navLinks.map((link) => (
-          <a
-            key={link.label}
-            href="#"
-            className="no-underline text-gray-800 font-medium hover:text-gray-600"
-          >
-            {link.label}
-          </a>
-        ))}
+        {inRecipePage
+          ? userLinks.map((link) => (
+              <a
+                key={link.label}
+                href={link.link}
+                className="no-underline text-gray-800 font-medium hover:text-gray-600 transition-colors duration-200"
+              >
+                {link.label}
+              </a>
+            ))
+          : navLinks.map((link) => (
+              <a
+                key={link.label}
+                href={`#${link.label.toLowerCase()}`}
+                className="no-underline text-gray-800 font-medium hover:text-gray-600 transition-colors duration-200"
+              >
+                {link.label}
+              </a>
+            ))}
       </div>
 
       <Button variant="default" onClick={() => navigate("/create-recipe")}>
