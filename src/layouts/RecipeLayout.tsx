@@ -19,12 +19,14 @@ const RecipeLayout = ({ children }: RecipeLayoutProps) => {
       <div className="absolute inset-0 backdrop-blur-sm pointer-events-none"></div>
 
       {/* Content */}
-      <div className="relative">
+      <div className="relative h-screen flex flex-col">
         <Navbar inRecipePage />
         <SidebarProvider>
           <RecipesSidebar />
           <SidebarTrigger />
-          <main className="pl-1 py-8 w-full px-8">{children}</main>
+          <main className="pl-1 py-8 px-8 flex-1 overflow-hidden">
+            {children}
+          </main>
         </SidebarProvider>
       </div>
     </div>
