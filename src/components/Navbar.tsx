@@ -1,8 +1,11 @@
 import logo64 from "../assets/logo-64x64.png";
 import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
+import { useUser } from "@/contexts/User";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const Navbar = ({ inRecipePage = false }: { inRecipePage?: boolean }) => {
+  const { user, isLoggedIn } = useUser();
   const navLinks = [
     { label: "Home" },
     { label: "Features" },
@@ -42,9 +45,30 @@ const Navbar = ({ inRecipePage = false }: { inRecipePage?: boolean }) => {
             ))}
       </div>
 
-      <Button variant="default" onClick={() => navigate("/create-recipe")}>
-        Get started
-      </Button>
+      {isLoggedIn ? (
+        <div
+          className="flex items-center gap-2 cursor-pointer"
+          onClick={() => navigate("/profile")}
+        >
+          <span className="text-[14px] text-gray-700 font-medium">
+            {user?.name}
+          </span>
+          <Avatar>
+            <AvatarImage
+              src={`https://avatar.iran.liara.run/public/${
+                user?.sex === "male" ? "boy" : "girl"
+              }?username=${user?.name.split(" ")[0]}`}
+            />
+            <AvatarFallback>
+              {user?.name.split(" ")[0].charAt(0)}
+            </AvatarFallback>
+          </Avatar>
+        </div>
+      ) : (
+        <Button variant="default" onClick={() => navigate("/create-recipe")}>
+          Get started
+        </Button>
+      )}
     </nav>
   );
 };
