@@ -1,50 +1,95 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
+import type { User as UserType } from "../types";
+import { userService } from "../services/user.service";
 
-// Define User type
-export interface User {
-  name: string;
-  age: number;
-  height: number; // in cm
-  exercising: boolean;
-  weight: number; // in kg
-  sex: "male" | "female";
-}
+export type User = UserType;
 
 interface UserContextType {
   user: User | null;
+  loading: boolean;
   isLoggedIn: boolean;
-  updateUser: (userData: Partial<User>) => void;
-  logout: () => void;
+  createUser: (
+    userData: Omit<User, "id" | "createdAt" | "updatedAt">
+  ) => Promise<void>;
+  updateUser: (userData: Partial<User>) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-// Mock user data for testing
-const mockUser: User = {
-  name: "John Doe",
-  age: 28,
-  height: 175,
-  exercising: true,
-  weight: 75,
-  sex: "male",
-};
-
 export function UserProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(mockUser);
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
-  const updateUser = (userData: Partial<User>) => {
-    setUser((prev) => (prev ? { ...prev, ...userData } : null));
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const fetchedUser = await userService.getUser();
+        if (fetchedUser) {
+          setUser(fetchedUser);
+          setIsLoggedIn(true);
+        }
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  const createUser = async (
+    userData: Omit<User, "id" | "createdAt" | "updatedAt">
+  ) => {
+    try {
+      const userId = await userService.createUser(userData);
+      const newUser = await userService.getUser();
+      if (newUser) {
+        setUser(newUser);
+        setIsLoggedIn(true);
+      }
+    } catch (error) {
+      console.error("Error creating user:", error);
+      throw error;
+    }
   };
 
-  const logout = () => {
-    setUser(null);
-    setIsLoggedIn(false);
+  const updateUser = async (userData: Partial<User>) => {
+    try {
+      if (!user || !user.id) {
+        throw new Error("No user to update");
+      }
+      await userService.updateUser(user.id, userData);
+      const updatedUser = await userService.getUser();
+      if (updatedUser) {
+        setUser(updatedUser);
+      }
+    } catch (error) {
+      console.error("Error updating user:", error);
+      throw error;
+    }
+  };
+
+  const logout = async () => {
+    try {
+      if (user && user.id) {
+        await userService.deleteUser(user.id);
+      }
+      setUser(null);
+      setIsLoggedIn(false);
+    } catch (error) {
+      console.error("Error logging out:", error);
+      throw error;
+    }
   };
 
   return (
-    <UserContext.Provider value={{ user, isLoggedIn, updateUser, logout }}>
+    <UserContext.Provider
+      value={{ user, loading, isLoggedIn, createUser, updateUser, logout }}
+    >
       {children}
     </UserContext.Provider>
   );

@@ -1,9 +1,24 @@
-// db.js
-import Dexie from "dexie";
+// db.ts
+import Dexie, { type Table } from "dexie";
+import type { User, Recipe, WeeklyPlan, DailyCheckIn } from "../types";
 
-export const db = new Dexie("crave-buddy");
-db.version(1).stores({
-  users: "++id",
-  recipes: "++id",
-  weeklyPlans: "++id",
-});
+export class CraveBuddyDB extends Dexie {
+  users!: Table<User>;
+  recipes!: Table<Recipe>;
+  weeklyPlans!: Table<WeeklyPlan>;
+  dailyCheckIns!: Table<DailyCheckIn>;
+
+  constructor() {
+    super("crave-buddy");
+    this.version(1).stores({
+      users:
+        "++id, name, age, height, weight, sex, exercising, createdAt, updatedAt",
+      recipes:
+        "++id, name, image, ingredients, instructions, nutritionalValues",
+      weeklyPlans: "++id, name, meals, createdAt, updatedAt",
+      dailyCheckIns: "++id, date, hungerLevel",
+    });
+  }
+}
+
+export const db = new CraveBuddyDB();

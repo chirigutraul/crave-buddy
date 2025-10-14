@@ -13,7 +13,6 @@ function Profile() {
           <DailyCheckIn />
         </div>
 
-        {/* Summary Section - Space for future week summary */}
         <div className="mt-6">
           <h6 className="text-neutral-800 mb-2">Mood Summary</h6>
           <div className="rounded-lg">
