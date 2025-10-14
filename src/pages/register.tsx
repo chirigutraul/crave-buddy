@@ -135,10 +135,10 @@ function Register() {
       <div className="absolute inset-0 backdrop-blur-sm pointer-events-none"></div>
       <div className="relative w-full max-w-2xl mx-auto p-8">
         <div className="bg-neutral-50/95 rounded-2xl border-1 border-neutral-400 shadow-xl p-8">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-neutral-800 mb-2">
+          <div className="mb-4">
+            <h3 className="text-3xl font-bold text-neutral-800 mb-2">
               Welcome to Crave Buddy!
-            </h1>
+            </h3>
             <p className="text-neutral-600">
               Let's get to know you better. Fill in your profile information to
               get started.
@@ -265,7 +265,7 @@ function Register() {
                     onValueChange={(value) =>
                       handleInputChange("activityLevel", value as ActivityLevel)
                     }
-                    className="space-y-3"
+                    className="space-y-1"
                   >
                     {[
                       {
