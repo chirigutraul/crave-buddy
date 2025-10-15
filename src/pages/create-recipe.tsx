@@ -119,7 +119,7 @@ function CreateRecipe() {
 
   return (
     <RecipeLayout>
-      <div className="w-full p-8 rounded-2xl bg-neutral-50/90 border-1 border-neutral-400 shadow-xl drop-shadow-xl">
+      <div className="h-full w-full p-8 rounded-2xl bg-neutral-50/90 border-1 border-neutral-400 shadow-xl drop-shadow-xl">
         <h5 className="mb-4">Start planning your meal</h5>
         <div className="flex gap-16 justify-between">
           <div className="flex flex-col gap-4">

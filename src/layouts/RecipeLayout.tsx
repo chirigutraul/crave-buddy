@@ -50,7 +50,7 @@ const RecipeLayout = ({ children }: RecipeLayoutProps) => {
       }}
     >
       <div className="absolute inset-0 backdrop-blur-sm pointer-events-none"></div>
-      <div className="relative h-screen flex flex-col">
+      <div className="relative min-h-screen flex flex-col">
         <Navbar inRecipePage />
         <SidebarProvider>
           <RecipesSidebar />
