@@ -7,6 +7,7 @@ import type { Recipe, RecipePair } from "@/types";
 import { CheckboxList, CheckboxListSkeleton } from "@/components/CheckboxList";
 import { Button } from "@/components/ui/button";
 import { PromptApiService } from "@/services/prompt-api";
+import { recipeService } from "@/services/recipe.service";
 import { useEffect, useState, useRef } from "react";
 import { parseRecipeResponse } from "@/lib/utils";
 
@@ -18,11 +19,14 @@ function CreateRecipe() {
   const [generatedRecipes, setGeneratedRecipes] = useState<RecipePair | null>(
     null
   );
+  const [isSaving, setIsSaving] = useState(false);
+  const [savedRecipeId, setSavedRecipeId] = useState<number | null>(null);
 
   const clasicRecipe: Recipe = {
-    id: "1",
+    id: 1,
     image: "/placeholder-image.png",
     name: "Classic Spaghetti Bolognese",
+    category: ["lunch", "dinner"],
     ingredients: [
       "200g spaghetti",
       "100g ground beef",
@@ -47,9 +51,10 @@ function CreateRecipe() {
   };
 
   const improvedRecipe: Recipe = {
-    id: "2",
+    id: 2,
     image: "/placeholder-image.png",
     name: "Healthy Spaghetti Bolognese",
+    category: ["lunch", "dinner"],
     ingredients: [
       "200g whole grain spaghetti",
       "100g lean ground turkey",
@@ -81,6 +86,7 @@ function CreateRecipe() {
 
     try {
       setIsGenerating(true);
+      setSavedRecipeId(null); // Reset saved state when generating new recipe
       const response = await promptApiServiceRef.current.getRecipe(cravings);
       console.log("AI Response (raw):", response);
 
@@ -94,6 +100,31 @@ function CreateRecipe() {
       console.error("Error generating meal:", error);
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const saveRecipe = async () => {
+    if (!generatedRecipes) return;
+
+    try {
+      setIsSaving(true);
+      const recipeToSave: Omit<Recipe, "id"> = {
+        name: generatedRecipes.improvedRecipe.name,
+        image: "/placeholder-image.png", // You can update this with a real image later
+        category: generatedRecipes.improvedRecipe.category,
+        ingredients: generatedRecipes.improvedRecipe.ingredients,
+        instructions: generatedRecipes.improvedRecipe.instructions,
+        nutritionalValues: generatedRecipes.improvedRecipe.nutritionalValues,
+      };
+
+      const recipeId = await recipeService.createRecipe(recipeToSave);
+      setSavedRecipeId(recipeId);
+      console.log("Recipe saved successfully with ID:", recipeId);
+    } catch (error) {
+      console.error("Error saving recipe:", error);
+      alert("Failed to save recipe. Please try again.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -186,8 +217,18 @@ function CreateRecipe() {
             )}
           </div>
         </div>
-        <div className="flex justify-end w-full">
-          <Button>Save recipe</Button>
+        <div className="flex justify-end w-full items-center gap-4">
+          {savedRecipeId && (
+            <p className="text-green-600 font-medium">
+              Recipe saved successfully!
+            </p>
+          )}
+          <Button
+            onClick={saveRecipe}
+            disabled={!generatedRecipes || isSaving || savedRecipeId !== null}
+          >
+            {isSaving ? "Saving..." : savedRecipeId ? "Saved" : "Save recipe"}
+          </Button>
         </div>
       </div>
     </RecipeLayout>

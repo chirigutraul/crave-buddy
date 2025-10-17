@@ -1,7 +1,10 @@
+export type MealTime = "breakfast" | "lunch" | "dinner" | "snack";
+
 export interface Recipe {
   id?: number; // Optional for Dexie auto-increment
   name: string;
   image: string;
+  category: MealTime[];
   nutritionalValues: {
     calories: number;
     protein: number;
@@ -43,6 +46,7 @@ export type DayOfWeek =
 export interface DayMeals {
   breakfast: number | null; // Recipe ID
   lunch: number | null; // Recipe ID
+  snack: number | null; // Recipe ID
   dinner: number | null; // Recipe ID
 }
 

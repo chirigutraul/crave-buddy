@@ -17,20 +17,27 @@ function DayOfTheWeek({ day }: DayOfTheWeekProps) {
   const breakfastOptions: ComboboxOption[] = getRecipesByCategory(
     "breakfast"
   ).map((recipe) => ({
-    value: recipe.id,
+    value: recipe.id?.toString() || "",
     label: recipe.name,
   }));
 
   const lunchOptions: ComboboxOption[] = getRecipesByCategory("lunch").map(
     (recipe) => ({
-      value: recipe.id,
+      value: recipe.id?.toString() || "",
+      label: recipe.name,
+    })
+  );
+
+  const snackOptions: ComboboxOption[] = getRecipesByCategory("snack").map(
+    (recipe) => ({
+      value: recipe.id?.toString() || "",
       label: recipe.name,
     })
   );
 
   const dinnerOptions: ComboboxOption[] = getRecipesByCategory("dinner").map(
     (recipe) => ({
-      value: recipe.id,
+      value: recipe.id?.toString() || "",
       label: recipe.name,
     })
   );
@@ -45,8 +52,10 @@ function DayOfTheWeek({ day }: DayOfTheWeekProps) {
           </h6>
           <Combobox
             options={breakfastOptions}
-            value={currentMeals.breakfast || ""}
-            onValueChange={(value) => updateMeal(day, "breakfast", value)}
+            value={currentMeals.breakfast?.toString() || ""}
+            onValueChange={(value) =>
+              updateMeal(day, "breakfast", parseInt(value, 10))
+            }
             placeholder="Select breakfast..."
             searchPlaceholder="Search breakfast..."
             emptyMessage="No breakfast found."
@@ -59,11 +68,29 @@ function DayOfTheWeek({ day }: DayOfTheWeekProps) {
           </h6>
           <Combobox
             options={lunchOptions}
-            value={currentMeals.lunch || ""}
-            onValueChange={(value) => updateMeal(day, "lunch", value)}
+            value={currentMeals.lunch?.toString() || ""}
+            onValueChange={(value) =>
+              updateMeal(day, "lunch", parseInt(value, 10))
+            }
             placeholder="Select lunch..."
             searchPlaceholder="Search lunch..."
             emptyMessage="No lunch found."
+            className="w-full"
+          />
+        </div>
+        <div>
+          <h6 className="mb-2 text-sm font-semibold text-neutral-800">
+            Snack:
+          </h6>
+          <Combobox
+            options={snackOptions}
+            value={currentMeals.snack?.toString() || ""}
+            onValueChange={(value) =>
+              updateMeal(day, "snack", parseInt(value, 10))
+            }
+            placeholder="Select snack..."
+            searchPlaceholder="Search snack..."
+            emptyMessage="No snack found."
             className="w-full"
           />
         </div>
@@ -73,8 +100,10 @@ function DayOfTheWeek({ day }: DayOfTheWeekProps) {
           </h6>
           <Combobox
             options={dinnerOptions}
-            value={currentMeals.dinner || ""}
-            onValueChange={(value) => updateMeal(day, "dinner", value)}
+            value={currentMeals.dinner?.toString() || ""}
+            onValueChange={(value) =>
+              updateMeal(day, "dinner", parseInt(value, 10))
+            }
             placeholder="Select dinner..."
             searchPlaceholder="Search dinner..."
             emptyMessage="No dinner found."

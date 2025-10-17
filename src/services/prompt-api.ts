@@ -43,12 +43,16 @@ export class PromptApiService implements PromptApiServiceInterface {
 
 Based on these cravings, please provide TWO recipes in JSON format:
 1. A classic recipe that satisfies the craving
-2. A healthier improved version with ingredient substitutions
+2. A healthier improved version with ingredient substitutions, lower in kcalories
+Please categorize the recipes into the following categories: breakfast, lunch, snack, dinner.
+The recipe can be in many categories. For example, some lunch recipes can also be suitable for dinner, or some snacks can also be suitable for breakfast. 
+If the recipe is suitable for multiple categories, include all of them.
 
 Return the response in this exact JSON format:
 {
   "clasicRecipe": {
     "name": "recipe name",
+    "category": ["breakfast", "lunch", "snack", "dinner"],
     "ingredients": ["ingredient 1", "ingredient 2"],
     "instructions": ["step 1", "step 2"],
     "nutritionalValues": {
@@ -61,6 +65,7 @@ Return the response in this exact JSON format:
   },
   "improvedRecipe": {
     "name": "healthier recipe name",
+    "category": ["breakfast", "lunch", "snack", "dinner"],
     "ingredients": ["ingredient 1", "ingredient 2"],
     "instructions": ["step 1", "step 2"],
     "nutritionalValues": {
