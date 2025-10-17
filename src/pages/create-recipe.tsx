@@ -10,6 +10,7 @@ import { PromptApiService } from "@/services/prompt-api.service";
 import { recipeService } from "@/services/recipe.service";
 import { useEffect, useState, useRef } from "react";
 import { parseRecipeResponse } from "@/lib/utils";
+import { formatIngredient } from "@/lib/recipe-utils";
 
 function CreateRecipe() {
   const promptApiServiceRef = useRef<PromptApiService | null>(null);
@@ -22,17 +23,18 @@ function CreateRecipe() {
   const [isSaving, setIsSaving] = useState(false);
   const [savedRecipeId, setSavedRecipeId] = useState<number | null>(null);
 
-  const clasicRecipe: Recipe = {
+  const classicRecipe: Recipe = {
     id: 1,
     image: "/placeholder-image.png",
     name: "Classic Spaghetti Bolognese",
     category: ["lunch", "dinner"],
+    portionSize: 400,
     ingredients: [
-      "200g spaghetti",
-      "100g ground beef",
-      "1 onion, chopped",
-      "2 cloves garlic, minced",
-      "400g canned tomatoes",
+      { quantity: 200, unit: "g", name: "spaghetti" },
+      { quantity: 100, unit: "g", name: "ground beef" },
+      { quantity: 1, unit: "piece", name: "onion, chopped" },
+      { quantity: 2, unit: "cloves", name: "garlic, minced" },
+      { quantity: 400, unit: "g", name: "canned tomatoes" },
     ],
     instructions: [
       "Cook spaghetti according to package instructions.",
@@ -41,12 +43,12 @@ function CreateRecipe() {
       "Pour in canned tomatoes and simmer for 20 minutes.",
       "Serve sauce over spaghetti.",
     ],
-    nutritionalValues: {
-      calories: 600,
-      protein: 25,
-      fat: 20,
-      carbohydrates: 80,
-      fiber: 5,
+    nutritionalValuesPer100g: {
+      calories: 150,
+      protein: 6,
+      fat: 5,
+      carbohydrates: 20,
+      fiber: 1,
     },
   };
 
@@ -55,14 +57,15 @@ function CreateRecipe() {
     image: "/placeholder-image.png",
     name: "Healthy Spaghetti Bolognese",
     category: ["lunch", "dinner"],
+    portionSize: 450,
     ingredients: [
-      "200g whole grain spaghetti",
-      "100g lean ground turkey",
-      "1 onion, chopped",
-      "2 cloves garlic, minced",
-      "400g canned tomatoes",
-      "1 carrot, grated",
-      "1 zucchini, grated",
+      { quantity: 200, unit: "g", name: "whole grain spaghetti" },
+      { quantity: 100, unit: "g", name: "lean ground turkey" },
+      { quantity: 1, unit: "piece", name: "onion, chopped" },
+      { quantity: 2, unit: "cloves", name: "garlic, minced" },
+      { quantity: 400, unit: "g", name: "canned tomatoes" },
+      { quantity: 1, unit: "piece", name: "carrot, grated" },
+      { quantity: 1, unit: "piece", name: "zucchini, grated" },
     ],
     instructions: [
       "Cook whole grain spaghetti according to package instructions.",
@@ -72,12 +75,12 @@ function CreateRecipe() {
       "Pour in canned tomatoes and simmer for 20 minutes.",
       "Serve sauce over whole grain spaghetti.",
     ],
-    nutritionalValues: {
-      calories: 450,
-      protein: 30,
-      fat: 10,
-      carbohydrates: 60,
-      fiber: 10,
+    nutritionalValuesPer100g: {
+      calories: 100,
+      protein: 7,
+      fat: 2,
+      carbohydrates: 13,
+      fiber: 2,
     },
   };
 
@@ -92,7 +95,7 @@ function CreateRecipe() {
 
       const recipes = parseRecipeResponse(response);
       console.log("Parsed recipes:", recipes);
-      console.log("Classic Recipe:", recipes.clasicRecipe);
+      console.log("Classic Recipe:", recipes.classicRecipe);
       console.log("Improved Recipe:", recipes.improvedRecipe);
 
       setGeneratedRecipes(recipes);
@@ -112,9 +115,11 @@ function CreateRecipe() {
         name: generatedRecipes.improvedRecipe.name,
         image: "/placeholder-image.png", // You can update this with a real image later
         category: generatedRecipes.improvedRecipe.category,
+        portionSize: generatedRecipes.improvedRecipe.portionSize,
         ingredients: generatedRecipes.improvedRecipe.ingredients,
         instructions: generatedRecipes.improvedRecipe.instructions,
-        nutritionalValues: generatedRecipes.improvedRecipe.nutritionalValues,
+        nutritionalValuesPer100g:
+          generatedRecipes.improvedRecipe.nutritionalValuesPer100g,
       };
 
       const recipeId = await recipeService.createRecipe(recipeToSave);
@@ -176,7 +181,7 @@ function CreateRecipe() {
               <RecipeComparisonSkeleton />
             ) : (
               <RecipeComparison
-                clasicRecipe={generatedRecipes?.clasicRecipe || clasicRecipe}
+                classicRecipe={generatedRecipes?.classicRecipe || classicRecipe}
                 improvedRecipe={
                   generatedRecipes?.improvedRecipe || improvedRecipe
                 }
@@ -185,8 +190,16 @@ function CreateRecipe() {
             {generatedRecipes && (
               <p className="font-medium">
                 Results of smart swap: you reduced the calories by{" "}
-                {generatedRecipes.clasicRecipe.nutritionalValues.calories -
-                  generatedRecipes.improvedRecipe.nutritionalValues.calories}
+                {Math.round(
+                  (generatedRecipes.classicRecipe.nutritionalValuesPer100g
+                    .calories *
+                    generatedRecipes.classicRecipe.portionSize) /
+                    100 -
+                    (generatedRecipes.improvedRecipe.nutritionalValuesPer100g
+                      .calories *
+                      generatedRecipes.improvedRecipe.portionSize) /
+                      100
+                )}
                 kcal per portion and lowered the fats
               </p>
             )}
@@ -201,10 +214,10 @@ function CreateRecipe() {
               <>
                 <CheckboxList
                   title="Grocery List"
-                  items={
+                  items={(
                     generatedRecipes?.improvedRecipe.ingredients ||
                     improvedRecipe.ingredients
-                  }
+                  ).map(formatIngredient)}
                 />
                 <CheckboxList
                   title="Preparation Steps"

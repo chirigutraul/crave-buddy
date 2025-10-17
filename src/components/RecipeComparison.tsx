@@ -3,25 +3,25 @@ import RecipeCard, { RecipeCardSkeleton } from "./RecipeCard";
 import { ChevronsRight } from "lucide-react";
 
 interface RecipeComparisonProps {
-  clasicRecipe: Omit<Recipe, "id" | "image">;
+  classicRecipe: Omit<Recipe, "id" | "image">;
   improvedRecipe: Omit<Recipe, "id" | "image">;
 }
 
 function RecipeComparison({
-  clasicRecipe,
+  classicRecipe,
   improvedRecipe,
 }: RecipeComparisonProps) {
   return (
     <div className="flex gap-4 items-center">
       <RecipeCard
-        recipe={clasicRecipe}
+        recipe={classicRecipe}
         comparisonRecipe={improvedRecipe}
         title="Classic Recipe"
       />
       <ChevronsRight size={64} className="text-green-600" />
       <RecipeCard
         recipe={improvedRecipe}
-        comparisonRecipe={clasicRecipe}
+        comparisonRecipe={classicRecipe}
         title="Improved Recipe"
       />
     </div>

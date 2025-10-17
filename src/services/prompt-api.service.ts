@@ -46,40 +46,63 @@ export class PromptApiService implements PromptApiServiceInterface {
 Based on these cravings, please provide TWO recipes in JSON format:
 1. A classic recipe that satisfies the craving
 2. A healthier improved version with ingredient substitutions, lower in kcalories
+
 Please categorize the recipes into the following categories: breakfast, lunch, snack, dinner.
 The recipe can be in many categories. For example, some lunch recipes can also be suitable for dinner, or some snacks can also be suitable for breakfast. 
 If the recipe is suitable for multiple categories, include all of them.
-The nutritional values should be calculated per 100grams of the recipe.
+
+IMPORTANT INSTRUCTIONS:
+- Provide ingredients as structured objects with quantity, unit, and name
+- Use DECIMAL numbers for quantities (e.g., 0.5, 0.25, 0.75), NOT fractions (not 1/2, 1/4, 3/4)
+- Provide portionSize as the total weight in grams for ONE serving
+- Provide nutritionalValuesPer100g (not per portion)
+- Make sure the ingredients match the portion size
+- Return VALID JSON ONLY - no trailing commas, no comments, no extra text
+- DO NOT include any text before or after the JSON object
 
 Return the response in this exact JSON format:
 {
-  "clasicRecipe": {
+  "classicRecipe": {
     "name": "recipe name",
     "category": ["breakfast", "lunch", "snack", "dinner"],
-    "ingredients": ["ingredient 1", "ingredient 2"],
+    "portionSize": 350,
+    "ingredients": [
+      { "quantity": 200, "unit": "ml", "name": "milk" },
+      { "quantity": 50, "unit": "g", "name": "oats" },
+      { "quantity": 0.5, "unit": "cup", "name": "blueberries" },
+      { "quantity": 1, "unit": "piece", "name": "banana" }
+    ],
     "instructions": ["step 1", "step 2"],
-    "nutritionalValues": {
-      "calories": 0,
-      "protein": 0,
-      "carbohydrates": 0,
-      "fat": 0,
-      "fiber": 0
+    "nutritionalValuesPer100g": {
+      "calories": 120,
+      "protein": 5,
+      "carbohydrates": 15,
+      "fat": 3,
+      "fiber": 2
     }
   },
   "improvedRecipe": {
     "name": "healthier recipe name",
     "category": ["breakfast", "lunch", "snack", "dinner"],
-    "ingredients": ["ingredient 1", "ingredient 2"],
+    "portionSize": 350,
+    "ingredients": [
+      { "quantity": 200, "unit": "ml", "name": "almond milk" },
+      { "quantity": 60, "unit": "g", "name": "steel-cut oats" },
+      { "quantity": 0.25, "unit": "cup", "name": "chia seeds" },
+      { "quantity": 1, "unit": "piece", "name": "banana" }
+    ],
     "instructions": ["step 1", "step 2"],
-    "nutritionalValues": {
-      "calories": 0,
-      "protein": 0,
-      "carbohydrates": 0,
-      "fat": 0,
-      "fiber": 0
+    "nutritionalValuesPer100g": {
+      "calories": 95,
+      "protein": 4,
+      "carbohydrates": 12,
+      "fat": 2,
+      "fiber": 3
     }
   }
-}`;
+}
+
+IMPORTANT: Return ONLY the JSON object above. No additional text, explanations, or markdown formatting.`;
 
     console.log("Sending prompt to API...");
     const response = await clonedSession.prompt(prompt);
@@ -102,12 +125,13 @@ Return the response in this exact JSON format:
       dinner: {},
     };
 
-    // Create simple data structure: mealTime -> recipeName -> calories
+    // Create simple data structure: mealTime -> recipeName -> calories (per portion)
     recipes.forEach((recipe) => {
       recipe.category.forEach((mealTime) => {
-        recipesByMealTime[mealTime][
-          recipe.name
-        ] = `${recipe.nutritionalValues.calories}kcal`;
+        const caloriesPerPortion = Math.round(
+          (recipe.nutritionalValuesPer100g.calories * recipe.portionSize) / 100
+        );
+        recipesByMealTime[mealTime][recipe.name] = `${caloriesPerPortion}kcal`;
       });
     });
 

@@ -8,6 +8,7 @@ import { weeklyPlanService } from "@/services/weekly-plan.service";
 import { PromptApiService } from "@/services/prompt-api.service";
 import type { MealTime } from "@/types";
 import { useState, useEffect, useRef } from "react";
+import { calculateNutritionalValues } from "@/lib/recipe-utils";
 
 function MyWeek() {
   const { weekMeals, updateMeal, updateQuantity, recipes, getRecipeById } =
@@ -86,10 +87,14 @@ function MyWeek() {
           if (entry.recipeId !== null) {
             const recipe = getRecipeById(entry.recipeId);
             if (recipe) {
-              console.log(
-                `  ${mealTime}: ${recipe.name} - ${entry.quantity}g (${recipe.nutritionalValues.calories} kcal)`
+              const nutritionalValues = calculateNutritionalValues(
+                recipe,
+                entry.quantity
               );
-              dayTotal += recipe.nutritionalValues.calories;
+              console.log(
+                `  ${mealTime}: ${recipe.name} - ${entry.quantity}g (${nutritionalValues.calories} kcal)`
+              );
+              dayTotal += nutritionalValues.calories;
             } else {
               console.log(
                 `  ${mealTime}: Recipe ID ${entry.recipeId} (not found)`
@@ -148,10 +153,14 @@ function MyWeek() {
           if (entry.recipeId !== null) {
             const recipe = getRecipeById(entry.recipeId);
             if (recipe) {
-              console.log(
-                `  ${mealTime}: ${recipe.name} - ${entry.quantity}g (${recipe.nutritionalValues.calories} kcal)`
+              const nutritionalValues = calculateNutritionalValues(
+                recipe,
+                entry.quantity
               );
-              dayTotal += recipe.nutritionalValues.calories;
+              console.log(
+                `  ${mealTime}: ${recipe.name} - ${entry.quantity}g (${nutritionalValues.calories} kcal)`
+              );
+              dayTotal += nutritionalValues.calories;
             } else {
               console.log(`  ${mealTime}: Recipe ID ${entry.recipeId}`);
             }

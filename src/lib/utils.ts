@@ -9,6 +9,7 @@ export function cn(...inputs: ClassValue[]) {
 export function parseRecipeResponse(response: string): RecipePair {
   let jsonString = response.trim();
 
+  // Remove markdown code blocks
   if (jsonString.startsWith("```json")) {
     jsonString = jsonString.replace(/^```json\s*/, "");
   } else if (jsonString.startsWith("```")) {
@@ -19,10 +20,32 @@ export function parseRecipeResponse(response: string): RecipePair {
     jsonString = jsonString.replace(/\s*```$/, "");
   }
 
-  const parsed = JSON.parse(jsonString.trim());
+  // Clean up common JSON issues
+  jsonString = jsonString.trim();
 
-  return {
-    clasicRecipe: parsed.clasicRecipe,
-    improvedRecipe: parsed.improvedRecipe,
-  };
+  // Remove trailing commas before closing braces/brackets
+  jsonString = jsonString.replace(/,(\s*[}\]])/g, "$1");
+
+  // Remove comments (// style)
+  jsonString = jsonString.replace(/\/\/.*$/gm, "");
+
+  // Remove comments (/* */ style)
+  jsonString = jsonString.replace(/\/\*[\s\S]*?\*\//g, "");
+
+  try {
+    const parsed = JSON.parse(jsonString);
+
+    return {
+      classicRecipe: parsed.classicRecipe,
+      improvedRecipe: parsed.improvedRecipe,
+    };
+  } catch (error) {
+    console.error("Failed to parse recipe JSON:", error);
+    console.error("JSON string:", jsonString);
+    throw new Error(
+      `Failed to parse recipe response. Please try generating again. Error: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
+  }
 }

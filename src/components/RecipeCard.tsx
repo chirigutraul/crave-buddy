@@ -3,6 +3,7 @@ import fruitSalad from "../assets/fruit-salad.jpg";
 import type { Recipe } from "@/types";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { calculateNutritionalValues } from "@/lib/recipe-utils";
 
 interface RecipeCardProps {
   recipe?: Omit<Recipe, "id" | "image">;
@@ -75,55 +76,66 @@ function RecipeCard({ recipe, comparisonRecipe, title }: RecipeCardProps) {
     label: string,
     recipe: Omit<Recipe, "id" | "image">
   ): number | undefined => {
+    const nutritionalValues = calculateNutritionalValues(
+      recipe as Recipe,
+      recipe.portionSize
+    );
+
     switch (label) {
       case "Calories":
-        return recipe.nutritionalValues.calories;
+        return nutritionalValues.calories;
       case "Protein":
-        return recipe.nutritionalValues.protein;
+        return nutritionalValues.protein;
       case "Carbohydrates":
-        return recipe.nutritionalValues.carbohydrates;
+        return nutritionalValues.carbohydrates;
       case "Fat":
-        return recipe.nutritionalValues.fat;
+        return nutritionalValues.fat;
       case "Fiber":
-        return recipe.nutritionalValues.fiber;
+        return nutritionalValues.fiber;
       default:
         return undefined;
     }
   };
 
   const metrics: NutritionalMetric[] = recipe
-    ? [
-        {
-          value: recipe.nutritionalValues.calories,
-          label: "Calories",
-          unit: "kcal",
-          lowerIsBetter: true,
-        },
-        {
-          value: recipe.nutritionalValues.protein,
-          label: "Protein",
-          unit: "g",
-          lowerIsBetter: false,
-        },
-        {
-          value: recipe.nutritionalValues.carbohydrates,
-          label: "Carbohydrates",
-          unit: "g",
-          lowerIsBetter: true,
-        },
-        {
-          value: recipe.nutritionalValues.fat,
-          label: "Fat",
-          unit: "g",
-          lowerIsBetter: true,
-        },
-        {
-          value: recipe.nutritionalValues.fiber,
-          label: "Fiber",
-          unit: "g",
-          lowerIsBetter: false,
-        },
-      ]
+    ? (() => {
+        const nutritionalValues = calculateNutritionalValues(
+          recipe as Recipe,
+          recipe.portionSize
+        );
+        return [
+          {
+            value: nutritionalValues.calories,
+            label: "Calories",
+            unit: "kcal",
+            lowerIsBetter: true,
+          },
+          {
+            value: nutritionalValues.protein,
+            label: "Protein",
+            unit: "g",
+            lowerIsBetter: false,
+          },
+          {
+            value: nutritionalValues.carbohydrates,
+            label: "Carbohydrates",
+            unit: "g",
+            lowerIsBetter: true,
+          },
+          {
+            value: nutritionalValues.fat,
+            label: "Fat",
+            unit: "g",
+            lowerIsBetter: true,
+          },
+          {
+            value: nutritionalValues.fiber,
+            label: "Fiber",
+            unit: "g",
+            lowerIsBetter: false,
+          },
+        ];
+      })()
     : [];
 
   return (

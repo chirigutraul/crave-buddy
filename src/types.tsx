@@ -1,23 +1,30 @@
 export type MealTime = "breakfast" | "lunch" | "dinner" | "snack";
 
+export interface Ingredient {
+  quantity: number;
+  unit: string; // e.g., "g", "ml", "cups", "pieces"
+  name: string;
+}
+
 export interface Recipe {
   id?: number; // Optional for Dexie auto-increment
   name: string;
   image: string;
   category: MealTime[];
-  nutritionalValues: {
+  portionSize: number; // in grams - default serving size
+  nutritionalValuesPer100g: {
     calories: number;
     protein: number;
     carbohydrates: number;
     fat: number;
     fiber: number;
   };
-  ingredients: string[];
+  ingredients: Ingredient[]; // Changed from string[] to Ingredient[]
   instructions: string[];
 }
 
 export interface RecipePair {
-  clasicRecipe: Omit<Recipe, "id" | "image">;
+  classicRecipe: Omit<Recipe, "id" | "image">;
   improvedRecipe: Omit<Recipe, "id" | "image">;
 }
 

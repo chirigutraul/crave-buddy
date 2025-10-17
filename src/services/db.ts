@@ -18,6 +18,15 @@ export class CraveBuddyDB extends Dexie {
       weeklyPlans: "++id, name, meals, createdAt, updatedAt",
       dailyCheckIns: "++id, date, hungerLevel",
     });
+
+    // Version 2: Updated recipe structure with portions and structured ingredients
+    this.version(2).stores({
+      users:
+        "++id, name, age, height, weight, sex, exercising, createdAt, updatedAt",
+      recipes: "++id, name, image, portionSize, createdAt, updatedAt",
+      weeklyPlans: "++id, name, meals, createdAt, updatedAt",
+      dailyCheckIns: "++id, date, hungerLevel",
+    });
   }
 }
 
