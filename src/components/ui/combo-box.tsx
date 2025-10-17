@@ -32,6 +32,7 @@ interface ComboboxProps {
   searchPlaceholder?: string;
   emptyMessage?: string;
   className?: string;
+  unified?: boolean;
 }
 
 export function Combobox({
@@ -42,6 +43,7 @@ export function Combobox({
   searchPlaceholder = "Search...",
   emptyMessage = "No option found.",
   className = "w-[200px]",
+  unified = false,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
 
@@ -52,7 +54,12 @@ export function Combobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn("justify-between rounded-md", className)}
+          className={cn(
+            `justify-between ${
+              unified ? "rounded-md rounded-r-none" : "rounded-md"
+            }`,
+            className
+          )}
         >
           {value
             ? options.find((option) => option.value === value)?.label

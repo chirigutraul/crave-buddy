@@ -62,7 +62,8 @@ function DayOfTheWeek({ day }: DayOfTheWeekProps) {
               placeholder="Select breakfast..."
               searchPlaceholder="Search breakfast..."
               emptyMessage="No breakfast found."
-              className="flex-1 rounded-r-none"
+              className="flex-1"
+              unified={true}
             />
             <div className="relative w-16">
               <Input
@@ -76,9 +77,9 @@ function DayOfTheWeek({ day }: DayOfTheWeekProps) {
                   )
                 }
                 placeholder="0"
-                className="pr-5 text-sm rounded-l-none bg-background"
+                className="pr-5 text-sm rounded-l-none bg-background w-20"
               />
-              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-neutral-500 pointer-events-none">
+              <span className="absolute right-0 top-1/2 -translate-y-1/2 text-xs text-neutral-500 pointer-events-none">
                 g
               </span>
             </div>
@@ -98,7 +99,8 @@ function DayOfTheWeek({ day }: DayOfTheWeekProps) {
               placeholder="Select lunch..."
               searchPlaceholder="Search lunch..."
               emptyMessage="No lunch found."
-              className="flex-1 rounded-r-none"
+              className="flex-1"
+              unified={true}
             />
             <div className="relative w-16">
               <Input
@@ -108,9 +110,9 @@ function DayOfTheWeek({ day }: DayOfTheWeekProps) {
                   updateQuantity(day, "lunch", parseInt(e.target.value) || 0)
                 }
                 placeholder="0"
-                className="pr-5 text-sm rounded-l-none bg-background"
+                className="pr-5 text-sm rounded-l-none bg-background w-20"
               />
-              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-neutral-500 pointer-events-none">
+              <span className="absolute right-0 top-1/2 -translate-y-1/2 text-xs text-neutral-500 pointer-events-none">
                 g
               </span>
             </div>
@@ -130,7 +132,8 @@ function DayOfTheWeek({ day }: DayOfTheWeekProps) {
               placeholder="Select snack..."
               searchPlaceholder="Search snack..."
               emptyMessage="No snack found."
-              className="flex-1 rounded-r-none"
+              className="flex-1"
+              unified={true}
             />
             <div className="relative w-16">
               <Input
@@ -140,9 +143,9 @@ function DayOfTheWeek({ day }: DayOfTheWeekProps) {
                   updateQuantity(day, "snack", parseInt(e.target.value) || 0)
                 }
                 placeholder="0"
-                className="pr-5 text-sm rounded-l-none bg-background"
+                className="pr-5 text-sm rounded-l-none bg-background w-20"
               />
-              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-neutral-500 pointer-events-none">
+              <span className="absolute right-0 top-1/2 -translate-y-1/2 text-xs text-neutral-500 pointer-events-none">
                 g
               </span>
             </div>
@@ -162,7 +165,8 @@ function DayOfTheWeek({ day }: DayOfTheWeekProps) {
               placeholder="Select dinner..."
               searchPlaceholder="Search dinner..."
               emptyMessage="No dinner found."
-              className="flex-1 rounded-r-none"
+              className="flex-1"
+              unified={true}
             />
             <div className="relative w-16">
               <Input
@@ -172,9 +176,9 @@ function DayOfTheWeek({ day }: DayOfTheWeekProps) {
                   updateQuantity(day, "dinner", parseInt(e.target.value) || 0)
                 }
                 placeholder="0"
-                className="pr-5 text-sm rounded-l-none bg-background"
+                className="pr-5 text-sm rounded-l-none bg-background w-20"
               />
-              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-neutral-500 pointer-events-none">
+              <span className="absolute right-0 top-1/2 -translate-y-1/2 text-xs text-neutral-500 pointer-events-none">
                 g
               </span>
             </div>
