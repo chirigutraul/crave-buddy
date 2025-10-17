@@ -10,7 +10,8 @@ import type { MealTime } from "@/types";
 import { useState, useEffect, useRef } from "react";
 
 function MyWeek() {
-  const { weekMeals, updateMeal, recipes, getRecipeById } = useWeekMeal();
+  const { weekMeals, updateMeal, updateQuantity, recipes, getRecipeById } =
+    useWeekMeal();
   const [weekName, setWeekName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [savedPlanId, setSavedPlanId] = useState<number | null>(null);
@@ -56,16 +57,20 @@ function MyWeek() {
 
       console.log("Generated plan:", generatedPlan);
 
-      // Update the week meals using updateMeal function
+      // Update the week meals using updateMeal and updateQuantity functions
       Object.entries(generatedPlan).forEach(([day, meals]) => {
         const dayKey = day as DayOfWeek;
-        (Object.entries(meals) as [MealTime, number | null][]).forEach(
-          ([mealTime, recipeId]) => {
-            if (recipeId !== null) {
-              updateMeal(dayKey, mealTime, recipeId);
-            }
+        Object.entries(meals).forEach(([mealTime, mealEntry]) => {
+          const mt = mealTime as MealTime;
+          const entry = mealEntry as {
+            recipeId: number | null;
+            quantity: number;
+          };
+          if (entry.recipeId !== null) {
+            updateMeal(dayKey, mt, entry.recipeId);
+            updateQuantity(dayKey, mt, entry.quantity);
           }
-        );
+        });
       });
 
       // Log the generated plan with calorie breakdown
@@ -73,23 +78,27 @@ function MyWeek() {
       Object.entries(generatedPlan).forEach(([day, meals]) => {
         console.log(`\n${day}:`);
         let dayTotal = 0;
-        (Object.entries(meals) as [MealTime, number | null][]).forEach(
-          ([mealTime, recipeId]) => {
-            if (recipeId !== null) {
-              const recipe = getRecipeById(recipeId);
-              if (recipe) {
-                console.log(
-                  `  ${mealTime}: ${recipe.name} (${recipe.nutritionalValues.calories} kcal)`
-                );
-                dayTotal += recipe.nutritionalValues.calories;
-              } else {
-                console.log(`  ${mealTime}: Recipe ID ${recipeId} (not found)`);
-              }
+        Object.entries(meals).forEach(([mealTime, mealEntry]) => {
+          const entry = mealEntry as {
+            recipeId: number | null;
+            quantity: number;
+          };
+          if (entry.recipeId !== null) {
+            const recipe = getRecipeById(entry.recipeId);
+            if (recipe) {
+              console.log(
+                `  ${mealTime}: ${recipe.name} - ${entry.quantity}g (${recipe.nutritionalValues.calories} kcal)`
+              );
+              dayTotal += recipe.nutritionalValues.calories;
             } else {
-              console.log(`  ${mealTime}: Not selected`);
+              console.log(
+                `  ${mealTime}: Recipe ID ${entry.recipeId} (not found)`
+              );
             }
+          } else {
+            console.log(`  ${mealTime}: Not selected`);
           }
-        );
+        });
         console.log(
           `  ➜ TOTAL: ${dayTotal} kcal / ${dailyCalorieLimit} kcal limit`
         );
@@ -131,23 +140,25 @@ function MyWeek() {
       Object.entries(weekMeals).forEach(([day, meals]) => {
         console.log(`\n${day}:`);
         let dayTotal = 0;
-        (Object.entries(meals) as [MealTime, number | null][]).forEach(
-          ([mealTime, recipeId]) => {
-            if (recipeId !== null) {
-              const recipe = getRecipeById(recipeId);
-              if (recipe) {
-                console.log(
-                  `  ${mealTime}: ${recipe.name} (${recipe.nutritionalValues.calories} kcal)`
-                );
-                dayTotal += recipe.nutritionalValues.calories;
-              } else {
-                console.log(`  ${mealTime}: Recipe ID ${recipeId}`);
-              }
+        Object.entries(meals).forEach(([mealTime, mealEntry]) => {
+          const entry = mealEntry as {
+            recipeId: number | null;
+            quantity: number;
+          };
+          if (entry.recipeId !== null) {
+            const recipe = getRecipeById(entry.recipeId);
+            if (recipe) {
+              console.log(
+                `  ${mealTime}: ${recipe.name} - ${entry.quantity}g (${recipe.nutritionalValues.calories} kcal)`
+              );
+              dayTotal += recipe.nutritionalValues.calories;
             } else {
-              console.log(`  ${mealTime}: Not selected`);
+              console.log(`  ${mealTime}: Recipe ID ${entry.recipeId}`);
             }
+          } else {
+            console.log(`  ${mealTime}: Not selected`);
           }
-        );
+        });
         console.log(`  ➜ TOTAL: ${dayTotal} kcal`);
       });
       console.log("============================\n");

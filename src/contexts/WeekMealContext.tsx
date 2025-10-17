@@ -17,11 +17,16 @@ export type DayOfWeek =
   | "Saturday"
   | "Sunday";
 
+export interface MealEntry {
+  recipeId: number | null;
+  quantity: number; // in grams
+}
+
 export interface DayMeals {
-  breakfast: number | null;
-  lunch: number | null;
-  snack: number | null;
-  dinner: number | null;
+  breakfast: MealEntry;
+  lunch: MealEntry;
+  snack: MealEntry;
+  dinner: MealEntry;
 }
 
 export type WeekMeals = {
@@ -31,6 +36,11 @@ export type WeekMeals = {
 interface WeekMealContextType {
   weekMeals: WeekMeals;
   updateMeal: (day: DayOfWeek, mealTime: MealTime, recipeId: number) => void;
+  updateQuantity: (
+    day: DayOfWeek,
+    mealTime: MealTime,
+    quantity: number
+  ) => void;
   getRecipesByCategory: (category: MealTime) => Recipe[];
   getRecipeById: (id: number) => Recipe | undefined;
   recipes: Recipe[];
@@ -41,14 +51,51 @@ const WeekMealContext = createContext<WeekMealContextType | undefined>(
 );
 
 // Initial state for the week
+const initialMealEntry: MealEntry = { recipeId: null, quantity: 0 };
+
 const initialWeekMeals: WeekMeals = {
-  Monday: { breakfast: null, lunch: null, snack: null, dinner: null },
-  Tuesday: { breakfast: null, lunch: null, snack: null, dinner: null },
-  Wednesday: { breakfast: null, lunch: null, snack: null, dinner: null },
-  Thursday: { breakfast: null, lunch: null, snack: null, dinner: null },
-  Friday: { breakfast: null, lunch: null, snack: null, dinner: null },
-  Saturday: { breakfast: null, lunch: null, snack: null, dinner: null },
-  Sunday: { breakfast: null, lunch: null, snack: null, dinner: null },
+  Monday: {
+    breakfast: { ...initialMealEntry },
+    lunch: { ...initialMealEntry },
+    snack: { ...initialMealEntry },
+    dinner: { ...initialMealEntry },
+  },
+  Tuesday: {
+    breakfast: { ...initialMealEntry },
+    lunch: { ...initialMealEntry },
+    snack: { ...initialMealEntry },
+    dinner: { ...initialMealEntry },
+  },
+  Wednesday: {
+    breakfast: { ...initialMealEntry },
+    lunch: { ...initialMealEntry },
+    snack: { ...initialMealEntry },
+    dinner: { ...initialMealEntry },
+  },
+  Thursday: {
+    breakfast: { ...initialMealEntry },
+    lunch: { ...initialMealEntry },
+    snack: { ...initialMealEntry },
+    dinner: { ...initialMealEntry },
+  },
+  Friday: {
+    breakfast: { ...initialMealEntry },
+    lunch: { ...initialMealEntry },
+    snack: { ...initialMealEntry },
+    dinner: { ...initialMealEntry },
+  },
+  Saturday: {
+    breakfast: { ...initialMealEntry },
+    lunch: { ...initialMealEntry },
+    snack: { ...initialMealEntry },
+    dinner: { ...initialMealEntry },
+  },
+  Sunday: {
+    breakfast: { ...initialMealEntry },
+    lunch: { ...initialMealEntry },
+    snack: { ...initialMealEntry },
+    dinner: { ...initialMealEntry },
+  },
 };
 
 export function WeekMealProvider({ children }: { children: ReactNode }) {
@@ -62,7 +109,27 @@ export function WeekMealProvider({ children }: { children: ReactNode }) {
       ...prev,
       [day]: {
         ...prev[day],
-        [mealTime]: recipeId,
+        [mealTime]: {
+          ...prev[day][mealTime],
+          recipeId,
+        },
+      },
+    }));
+  };
+
+  const updateQuantity = (
+    day: DayOfWeek,
+    mealTime: MealTime,
+    quantity: number
+  ) => {
+    setWeekMeals((prev) => ({
+      ...prev,
+      [day]: {
+        ...prev[day],
+        [mealTime]: {
+          ...prev[day][mealTime],
+          quantity,
+        },
       },
     }));
   };
@@ -80,6 +147,7 @@ export function WeekMealProvider({ children }: { children: ReactNode }) {
       value={{
         weekMeals,
         updateMeal,
+        updateQuantity,
         getRecipesByCategory,
         getRecipeById,
         recipes,

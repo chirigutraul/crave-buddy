@@ -49,6 +49,7 @@ Based on these cravings, please provide TWO recipes in JSON format:
 Please categorize the recipes into the following categories: breakfast, lunch, snack, dinner.
 The recipe can be in many categories. For example, some lunch recipes can also be suitable for dinner, or some snacks can also be suitable for breakfast. 
 If the recipe is suitable for multiple categories, include all of them.
+The nutritional values should be calculated per 100grams of the recipe.
 
 Return the response in this exact JSON format:
 {
@@ -141,49 +142,50 @@ IMPORTANT RULES:
 Return the response in this exact JSON format (use recipe names exactly as provided):
 {
   "Monday": {
-    "breakfast": "recipe name",
-    "lunch": "recipe name",
-    "snack": "recipe name",
-    "dinner": "recipe name"
+    "breakfast": { "recipe": "recipe name", "quantity": 250 },
+    "lunch": { "recipe": "recipe name", "quantity": 400 },
+    "snack": { "recipe": "recipe name", "quantity": 150 },
+    "dinner": { "recipe": "recipe name", "quantity": 450 }
   },
   "Tuesday": {
-    "breakfast": "recipe name",
-    "lunch": "recipe name",
-    "snack": "recipe name",
-    "dinner": "recipe name"
+    "breakfast": { "recipe": "recipe name", "quantity": 250 },
+    "lunch": { "recipe": "recipe name", "quantity": 400 },
+    "snack": { "recipe": "recipe name", "quantity": 150 },
+    "dinner": { "recipe": "recipe name", "quantity": 450 }
   },
   "Wednesday": {
-    "breakfast": "recipe name",
-    "lunch": "recipe name",
-    "snack": "recipe name",
-    "dinner": "recipe name"
+    "breakfast": { "recipe": "recipe name", "quantity": 250 },
+    "lunch": { "recipe": "recipe name", "quantity": 400 },
+    "snack": { "recipe": "recipe name", "quantity": 150 },
+    "dinner": { "recipe": "recipe name", "quantity": 450 }
   },
   "Thursday": {
-    "breakfast": "recipe name",
-    "lunch": "recipe name",
-    "snack": "recipe name",
-    "dinner": "recipe name"
+    "breakfast": { "recipe": "recipe name", "quantity": 250 },
+    "lunch": { "recipe": "recipe name", "quantity": 400 },
+    "snack": { "recipe": "recipe name", "quantity": 150 },
+    "dinner": { "recipe": "recipe name", "quantity": 450 }
   },
   "Friday": {
-    "breakfast": "recipe name",
-    "lunch": "recipe name",
-    "snack": "recipe name",
-    "dinner": "recipe name"
+    "breakfast": { "recipe": "recipe name", "quantity": 250 },
+    "lunch": { "recipe": "recipe name", "quantity": 400 },
+    "snack": { "recipe": "recipe name", "quantity": 150 },
+    "dinner": { "recipe": "recipe name", "quantity": 450 }
   },
   "Saturday": {
-    "breakfast": "recipe name",
-    "lunch": "recipe name",
-    "snack": "recipe name",
-    "dinner": "recipe name"
+    "breakfast": { "recipe": "recipe name", "quantity": 250 },
+    "lunch": { "recipe": "recipe name", "quantity": 400 },
+    "snack": { "recipe": "recipe name", "quantity": 150 },
+    "dinner": { "recipe": "recipe name", "quantity": 450 }
   },
   "Sunday": {
-    "breakfast": "recipe name",
-    "lunch": "recipe name",
-    "snack": "recipe name",
-    "dinner": "recipe name"
+    "breakfast": { "recipe": "recipe name", "quantity": 250 },
+    "lunch": { "recipe": "recipe name", "quantity": 400 },
+    "snack": { "recipe": "recipe name", "quantity": 150 },
+    "dinner": { "recipe": "recipe name", "quantity": 450 }
   }
 }
 
+Where quantity is measured in grams and represents an appropriate portion size for each meal.
 IMPORTANT: Return ONLY the JSON object, no additional text or explanation.`;
 
     console.log("Generating weekly meal plan...");
@@ -205,25 +207,73 @@ IMPORTANT: Return ONLY the JSON object, no additional text or explanation.`;
       }
     });
 
-    // Convert AI response (recipe names) to WeekMeals structure (recipe IDs)
+    // Convert AI response (recipe names + quantities) to WeekMeals structure (recipe IDs + quantities)
+    const initialMealEntry = { recipeId: null, quantity: 0 };
     const weekMeals: WeekMeals = {
-      Monday: { breakfast: null, lunch: null, snack: null, dinner: null },
-      Tuesday: { breakfast: null, lunch: null, snack: null, dinner: null },
-      Wednesday: { breakfast: null, lunch: null, snack: null, dinner: null },
-      Thursday: { breakfast: null, lunch: null, snack: null, dinner: null },
-      Friday: { breakfast: null, lunch: null, snack: null, dinner: null },
-      Saturday: { breakfast: null, lunch: null, snack: null, dinner: null },
-      Sunday: { breakfast: null, lunch: null, snack: null, dinner: null },
+      Monday: {
+        breakfast: { ...initialMealEntry },
+        lunch: { ...initialMealEntry },
+        snack: { ...initialMealEntry },
+        dinner: { ...initialMealEntry },
+      },
+      Tuesday: {
+        breakfast: { ...initialMealEntry },
+        lunch: { ...initialMealEntry },
+        snack: { ...initialMealEntry },
+        dinner: { ...initialMealEntry },
+      },
+      Wednesday: {
+        breakfast: { ...initialMealEntry },
+        lunch: { ...initialMealEntry },
+        snack: { ...initialMealEntry },
+        dinner: { ...initialMealEntry },
+      },
+      Thursday: {
+        breakfast: { ...initialMealEntry },
+        lunch: { ...initialMealEntry },
+        snack: { ...initialMealEntry },
+        dinner: { ...initialMealEntry },
+      },
+      Friday: {
+        breakfast: { ...initialMealEntry },
+        lunch: { ...initialMealEntry },
+        snack: { ...initialMealEntry },
+        dinner: { ...initialMealEntry },
+      },
+      Saturday: {
+        breakfast: { ...initialMealEntry },
+        lunch: { ...initialMealEntry },
+        snack: { ...initialMealEntry },
+        dinner: { ...initialMealEntry },
+      },
+      Sunday: {
+        breakfast: { ...initialMealEntry },
+        lunch: { ...initialMealEntry },
+        snack: { ...initialMealEntry },
+        dinner: { ...initialMealEntry },
+      },
     };
 
-    // Map recipe names to IDs
+    // Map recipe names and quantities to IDs and quantities
     Object.entries(aiPlan).forEach(([day, meals]: [string, any]) => {
       const dayKey = day as keyof WeekMeals;
       weekMeals[dayKey] = {
-        breakfast: recipeNameToId.get(meals.breakfast) ?? null,
-        lunch: recipeNameToId.get(meals.lunch) ?? null,
-        snack: recipeNameToId.get(meals.snack) ?? null,
-        dinner: recipeNameToId.get(meals.dinner) ?? null,
+        breakfast: {
+          recipeId: recipeNameToId.get(meals.breakfast.recipe) ?? null,
+          quantity: meals.breakfast.quantity ?? 0,
+        },
+        lunch: {
+          recipeId: recipeNameToId.get(meals.lunch.recipe) ?? null,
+          quantity: meals.lunch.quantity ?? 0,
+        },
+        snack: {
+          recipeId: recipeNameToId.get(meals.snack.recipe) ?? null,
+          quantity: meals.snack.quantity ?? 0,
+        },
+        dinner: {
+          recipeId: recipeNameToId.get(meals.dinner.recipe) ?? null,
+          quantity: meals.dinner.quantity ?? 0,
+        },
       };
     });
 

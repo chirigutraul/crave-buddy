@@ -43,11 +43,16 @@ export type DayOfWeek =
   | "Saturday"
   | "Sunday";
 
+export interface MealEntry {
+  recipeId: number | null;
+  quantity: number; // in grams
+}
+
 export interface DayMeals {
-  breakfast: number | null; // Recipe ID
-  lunch: number | null; // Recipe ID
-  snack: number | null; // Recipe ID
-  dinner: number | null; // Recipe ID
+  breakfast: MealEntry;
+  lunch: MealEntry;
+  snack: MealEntry;
+  dinner: MealEntry;
 }
 
 export type WeekMeals = {
