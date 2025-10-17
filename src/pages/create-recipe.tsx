@@ -6,7 +6,7 @@ import RecipeComparison, {
 import type { Recipe, RecipePair } from "@/types";
 import { CheckboxList, CheckboxListSkeleton } from "@/components/CheckboxList";
 import { Button } from "@/components/ui/button";
-import { PromptApiService } from "@/services/prompt-api";
+import { PromptApiService } from "@/services/prompt-api.service";
 import { recipeService } from "@/services/recipe.service";
 import { useEffect, useState, useRef } from "react";
 import { parseRecipeResponse } from "@/lib/utils";

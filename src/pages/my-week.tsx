@@ -5,13 +5,19 @@ import type { DayOfWeek } from "@/contexts/WeekMealContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { weeklyPlanService } from "@/services/weekly-plan.service";
-import { useState } from "react";
+import { PromptApiService } from "@/services/prompt-api.service";
+import type { MealTime } from "@/types";
+import { useState, useEffect, useRef } from "react";
 
 function MyWeek() {
-  const { weekMeals } = useWeekMeal();
+  const { weekMeals, updateMeal, recipes, getRecipeById } = useWeekMeal();
   const [weekName, setWeekName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [savedPlanId, setSavedPlanId] = useState<number | null>(null);
+  const promptApiServiceRef = useRef<PromptApiService | null>(null);
+  const [isReady, setIsReady] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [dailyCalorieLimit, setDailyCalorieLimit] = useState(2200);
 
   const days: DayOfWeek[] = [
     "Monday",
@@ -22,6 +28,82 @@ function MyWeek() {
     "Saturday",
     "Sunday",
   ];
+
+  const handleGenerateWithAI = async () => {
+    if (!promptApiServiceRef.current || !isReady) {
+      alert("AI service is not ready yet. Please wait...");
+      return;
+    }
+
+    if (recipes.length === 0) {
+      alert("No recipes available. Please create some recipes first.");
+      return;
+    }
+
+    try {
+      setIsGenerating(true);
+      setSavedPlanId(null); // Reset saved state
+
+      console.log("Generating weekly plan with AI...");
+      console.log("Recipes count:", recipes.length);
+      console.log("Daily calorie limit:", dailyCalorieLimit);
+
+      const generatedPlan =
+        await promptApiServiceRef.current.generateWeeklyPlan(
+          recipes,
+          dailyCalorieLimit
+        );
+
+      console.log("Generated plan:", generatedPlan);
+
+      // Update the week meals using updateMeal function
+      Object.entries(generatedPlan).forEach(([day, meals]) => {
+        const dayKey = day as DayOfWeek;
+        (Object.entries(meals) as [MealTime, number | null][]).forEach(
+          ([mealTime, recipeId]) => {
+            if (recipeId !== null) {
+              updateMeal(dayKey, mealTime, recipeId);
+            }
+          }
+        );
+      });
+
+      // Log the generated plan with calorie breakdown
+      console.log("\n=== AI Generated Weekly Plan ===");
+      Object.entries(generatedPlan).forEach(([day, meals]) => {
+        console.log(`\n${day}:`);
+        let dayTotal = 0;
+        (Object.entries(meals) as [MealTime, number | null][]).forEach(
+          ([mealTime, recipeId]) => {
+            if (recipeId !== null) {
+              const recipe = getRecipeById(recipeId);
+              if (recipe) {
+                console.log(
+                  `  ${mealTime}: ${recipe.name} (${recipe.nutritionalValues.calories} kcal)`
+                );
+                dayTotal += recipe.nutritionalValues.calories;
+              } else {
+                console.log(`  ${mealTime}: Recipe ID ${recipeId} (not found)`);
+              }
+            } else {
+              console.log(`  ${mealTime}: Not selected`);
+            }
+          }
+        );
+        console.log(
+          `  ➜ TOTAL: ${dayTotal} kcal / ${dailyCalorieLimit} kcal limit`
+        );
+      });
+      console.log("================================\n");
+
+      alert("Weekly plan generated successfully!");
+    } catch (error) {
+      console.error("Error generating weekly plan:", error);
+      alert("Failed to generate weekly plan. Please try again.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleSaveWeek = async () => {
     if (!weekName.trim()) {
@@ -42,17 +124,33 @@ function MyWeek() {
       const planId = await weeklyPlanService.createWeeklyPlan(weeklyPlan);
       setSavedPlanId(planId);
 
-      // Log the week meals with recipe IDs
-      console.log("Week Meal Plan Saved:");
+      // Log the week meals with recipe IDs and calories
+      console.log("\n=== Week Meal Plan Saved ===");
       console.log("Plan ID:", planId);
       console.log("Plan Name:", weekName);
       Object.entries(weekMeals).forEach(([day, meals]) => {
-        console.log(`${day}:`);
-        console.log(`  breakfast: ${meals.breakfast ?? "Not selected"}`);
-        console.log(`  lunch: ${meals.lunch ?? "Not selected"}`);
-        console.log(`  snack: ${meals.snack ?? "Not selected"}`);
-        console.log(`  dinner: ${meals.dinner ?? "Not selected"}`);
+        console.log(`\n${day}:`);
+        let dayTotal = 0;
+        (Object.entries(meals) as [MealTime, number | null][]).forEach(
+          ([mealTime, recipeId]) => {
+            if (recipeId !== null) {
+              const recipe = getRecipeById(recipeId);
+              if (recipe) {
+                console.log(
+                  `  ${mealTime}: ${recipe.name} (${recipe.nutritionalValues.calories} kcal)`
+                );
+                dayTotal += recipe.nutritionalValues.calories;
+              } else {
+                console.log(`  ${mealTime}: Recipe ID ${recipeId}`);
+              }
+            } else {
+              console.log(`  ${mealTime}: Not selected`);
+            }
+          }
+        );
+        console.log(`  ➜ TOTAL: ${dayTotal} kcal`);
       });
+      console.log("============================\n");
 
       alert(`Weekly plan "${weekName}" saved successfully!`);
     } catch (error) {
@@ -63,6 +161,27 @@ function MyWeek() {
     }
   };
 
+  useEffect(() => {
+    const initializeService = async () => {
+      try {
+        promptApiServiceRef.current = new PromptApiService();
+        const availability =
+          await promptApiServiceRef.current.getAvailability();
+        if (availability !== "available") {
+          console.log(`Prompt API is ${availability}. Please wait...`);
+        }
+
+        await promptApiServiceRef.current.init();
+        setIsReady(true);
+        console.log("Prompt API initialized for weekly planning");
+      } catch (error) {
+        console.error("Failed to initialize Prompt API:", error);
+      }
+    };
+
+    initializeService();
+  }, []);
+
   return (
     <RecipeLayout>
       <div className="h-full p-8 rounded-2xl bg-neutral-50/90 border-1 border-neutral-400 shadow-xl drop-shadow-xl flex flex-col">
@@ -71,6 +190,20 @@ function MyWeek() {
             Plan your meals for the following week
           </h5>
           <div className="flex items-center gap-3 flex-1 justify-end">
+            <Input
+              type="number"
+              placeholder="Daily calorie limit"
+              value={dailyCalorieLimit}
+              onChange={(e) => setDailyCalorieLimit(Number(e.target.value))}
+              className="max-w-[150px]"
+            />
+            <Button
+              onClick={handleGenerateWithAI}
+              variant="outline"
+              disabled={!isReady || isGenerating || recipes.length === 0}
+            >
+              {isGenerating ? "Generating..." : "Generate with AI"}
+            </Button>
             <Input
               type="text"
               placeholder="Week plan name (e.g., 'Week of Jan 15')"
