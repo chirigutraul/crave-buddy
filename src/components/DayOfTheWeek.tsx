@@ -3,6 +3,8 @@ import type { DayOfWeek as DayType } from "@/contexts/WeekMealContext";
 import { Combobox } from "@/components/ui/combo-box";
 import type { ComboboxOption } from "@/components/ui/combo-box";
 import { Input } from "@/components/ui/input";
+import { calculateNutritionalValues } from "@/lib/recipe-utils";
+import type { MealTime } from "@/types";
 
 interface DayOfTheWeekProps {
   day: DayType;
@@ -43,6 +45,48 @@ function DayOfTheWeek({ day }: DayOfTheWeekProps) {
       label: recipe.name,
     })
   );
+
+  // Calculate daily totals
+  const calculateDailyTotals = () => {
+    const mealTimes: MealTime[] = ["breakfast", "lunch", "snack", "dinner"];
+    let totals = {
+      calories: 0,
+      protein: 0,
+      carbohydrates: 0,
+      fat: 0,
+      fiber: 0,
+    };
+
+    mealTimes.forEach((mealTime) => {
+      const meal = currentMeals[mealTime];
+      if (meal.recipeId && meal.quantity > 0) {
+        const recipe = getRecipesByCategory(mealTime).find(
+          (r) => r.id === meal.recipeId
+        );
+        if (recipe) {
+          const nutritionalValues = calculateNutritionalValues(
+            recipe,
+            meal.quantity
+          );
+          totals.calories += nutritionalValues.calories;
+          totals.protein += nutritionalValues.protein;
+          totals.carbohydrates += nutritionalValues.carbohydrates;
+          totals.fat += nutritionalValues.fat;
+          totals.fiber += nutritionalValues.fiber;
+        }
+      }
+    });
+
+    return {
+      calories: Math.round(totals.calories),
+      protein: Math.round(totals.protein * 10) / 10,
+      carbohydrates: Math.round(totals.carbohydrates * 10) / 10,
+      fat: Math.round(totals.fat * 10) / 10,
+      fiber: Math.round(totals.fiber * 10) / 10,
+    };
+  };
+
+  const dailyTotals = calculateDailyTotals();
 
   return (
     <div className="py-4 min-w-[250px] flex-shrink-0">
@@ -180,6 +224,45 @@ function DayOfTheWeek({ day }: DayOfTheWeekProps) {
               />
               <span className="absolute right-0 top-1/2 -translate-y-1/2 text-xs text-neutral-500 pointer-events-none">
                 g
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Daily Totals Summary */}
+        <div className="mt-4 pt-4 border-t border-neutral-300">
+          <h6 className="mb-2 text-sm font-bold text-neutral-800">
+            Daily Totals
+          </h6>
+          <div className="space-y-1 text-xs">
+            <div className="flex justify-between">
+              <span className="text-neutral-600">Calories:</span>
+              <span className="font-semibold text-neutral-800">
+                {dailyTotals.calories} kcal
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-neutral-600">Protein:</span>
+              <span className="font-semibold text-neutral-800">
+                {dailyTotals.protein}g
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-neutral-600">Carbs:</span>
+              <span className="font-semibold text-neutral-800">
+                {dailyTotals.carbohydrates}g
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-neutral-600">Fat:</span>
+              <span className="font-semibold text-neutral-800">
+                {dailyTotals.fat}g
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-neutral-600">Fiber:</span>
+              <span className="font-semibold text-neutral-800">
+                {dailyTotals.fiber}g
               </span>
             </div>
           </div>
