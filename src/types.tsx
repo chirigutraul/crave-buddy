@@ -7,7 +7,7 @@ export interface Ingredient {
 }
 
 export interface Recipe {
-  id?: number; // Optional for Dexie auto-increment
+  id: number;
   name: string;
   image: string;
   category: MealTime[];
