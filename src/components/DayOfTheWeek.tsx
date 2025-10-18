@@ -93,9 +93,9 @@ function DayOfTheWeek({ day }: DayOfTheWeekProps) {
       <h5 className="mb-4">{day}</h5>
       <div className="flex flex-col gap-4">
         <div>
-          <h6 className="mb-2 text-sm font-semibold text-neutral-800">
+          <p className="mb-1 text-sm font-semibold text-neutral-800">
             Breakfast:
-          </h6>
+          </p>
           <div className="flex items-center">
             <Combobox
               options={breakfastOptions}
@@ -130,9 +130,7 @@ function DayOfTheWeek({ day }: DayOfTheWeekProps) {
           </div>
         </div>
         <div>
-          <h6 className="mb-2 text-sm font-semibold text-neutral-800">
-            Lunch:
-          </h6>
+          <p className="mb-1 text-sm font-semibold text-neutral-800">Lunch:</p>
           <div className="flex items-center">
             <Combobox
               options={lunchOptions}
@@ -163,9 +161,7 @@ function DayOfTheWeek({ day }: DayOfTheWeekProps) {
           </div>
         </div>
         <div>
-          <h6 className="mb-2 text-sm font-semibold text-neutral-800">
-            Snack:
-          </h6>
+          <p className="mb-1 text-sm font-semibold text-neutral-800">Snack:</p>
           <div className="flex items-center">
             <Combobox
               options={snackOptions}
@@ -196,9 +192,7 @@ function DayOfTheWeek({ day }: DayOfTheWeekProps) {
           </div>
         </div>
         <div>
-          <h6 className="mb-2 text-sm font-semibold text-neutral-800">
-            Dinner:
-          </h6>
+          <p className="mb-1 text-sm font-semibold text-neutral-800">Dinner:</p>
           <div className="flex items-center">
             <Combobox
               options={dinnerOptions}
