@@ -10,7 +10,11 @@ import type { MealTime } from "@/types";
 import { useState, useEffect, useRef } from "react";
 import { calculateNutritionalValues } from "@/lib/recipe-utils";
 import { useUser } from "@/contexts/User";
-import { calculateBMR, calculateDailyCalories } from "@/lib/utils";
+import {
+  calculateBMR,
+  calculateDailyCalories,
+  getCurrentWeight,
+} from "@/lib/utils";
 
 function MyWeek() {
   const {
@@ -35,7 +39,7 @@ function MyWeek() {
       return 2000; // Default fallback
     }
     const bmr = calculateBMR({
-      weight: user.weight,
+      weight: getCurrentWeight(user.weight),
       height: user.height,
       age: user.age,
       sex: user.sex,
@@ -54,7 +58,7 @@ function MyWeek() {
       return 2222; // Default fallback (2000 / 0.9)
     }
     const bmr = calculateBMR({
-      weight: user.weight,
+      weight: getCurrentWeight(user.weight),
       height: user.height,
       age: user.age,
       sex: user.sex,

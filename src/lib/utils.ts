@@ -1,9 +1,21 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import type { RecipePair, ActivityLevel } from "@/types";
+import type { RecipePair, ActivityLevel, WeightEntry } from "@/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+/**
+ * Gets the current weight from a user's weight entries array
+ * @param weightEntries - Array of weight entries sorted by date (oldest to newest)
+ * @returns The most recent weight value, or 0 if no entries exist
+ */
+export function getCurrentWeight(weightEntries: WeightEntry[]): number {
+  if (!weightEntries || weightEntries.length === 0) {
+    return 0;
+  }
+  return weightEntries[weightEntries.length - 1].value;
 }
 
 /**

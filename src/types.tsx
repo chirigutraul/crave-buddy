@@ -81,12 +81,17 @@ export type ActivityLevel =
   | "very_active"
   | "extra_active";
 
+export interface WeightEntry {
+  value: number;
+  date: string; // ISO date string
+}
+
 export interface User {
   id?: number;
   name: string;
   age: number;
   height: number;
-  weight: number;
+  weight: WeightEntry[];
   sex: "male" | "female";
   exercising: string;
   activityLevel?: ActivityLevel;

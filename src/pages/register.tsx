@@ -94,7 +94,12 @@ function Register() {
         name: formData.name.trim(),
         age: parseInt(formData.age),
         height: parseFloat(formData.height),
-        weight: parseFloat(formData.weight),
+        weight: [
+          {
+            value: parseFloat(formData.weight),
+            date: new Date().toISOString(),
+          },
+        ],
         sex: formData.sex,
         exercising: formData.activityLevel,
         activityLevel: formData.activityLevel,
