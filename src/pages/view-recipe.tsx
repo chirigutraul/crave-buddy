@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import RecipeLayout from "@/layouts/RecipeLayout";
 import RecipeCard from "@/components/RecipeCard";
 import { Button } from "@/components/ui/button";
@@ -9,10 +9,11 @@ import { ImageService } from "@/services/image.service";
 import type { Recipe } from "@/types";
 import { formatIngredient } from "@/lib/recipe-utils";
 import { ChevronLeft } from "lucide-react";
+import { useViewTransition } from "@/hooks/use-view-transition";
 
 const ViewRecipe = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+  const navigate = useViewTransition();
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
 

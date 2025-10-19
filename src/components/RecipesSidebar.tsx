@@ -1,8 +1,8 @@
 import { CloudSun, Sun, Moon, Cookie, Calendar } from "lucide-react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { useNavigate } from "react-router-dom";
 import { db } from "@/services/db";
 import type { Recipe, MealTime } from "@/types";
+import { useViewTransition } from "@/hooks/use-view-transition";
 
 import {
   Sidebar,
@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/accordion";
 
 export function RecipesSidebar() {
-  const navigate = useNavigate();
+  const navigate = useViewTransition();
 
   // Use useLiveQuery to observe recipe changes in real-time
   const recipes = useLiveQuery(

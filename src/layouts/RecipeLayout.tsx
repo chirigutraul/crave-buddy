@@ -1,10 +1,10 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { RecipesSidebar } from "@/components/RecipesSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useUser } from "@/contexts/User";
 import BackgroundImage from "@/assets/background-image.jpeg";
+import { useViewTransition } from "@/hooks/use-view-transition";
 
 interface RecipeLayoutProps {
   children: React.ReactNode;
@@ -12,7 +12,7 @@ interface RecipeLayoutProps {
 
 const RecipeLayout = ({ children }: RecipeLayoutProps) => {
   const { user, loading } = useUser();
-  const navigate = useNavigate();
+  const navigate = useViewTransition();
 
   useEffect(() => {
     if (!loading && !user) {

@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useUser } from "@/contexts/User";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useViewTransition } from "@/hooks/use-view-transition";
 import {
   Field,
   FieldDescription,
@@ -41,7 +41,7 @@ interface FormErrors {
 }
 
 function Register() {
-  const navigate = useNavigate();
+  const navigate = useViewTransition();
   const { createUser } = useUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>({

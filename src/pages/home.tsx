@@ -5,11 +5,11 @@ import groceries from "../assets/groceries.jpg";
 import preparation from "../assets/preparation.jpg";
 import smartSwaps from "../assets/smart-swap.png";
 import howItWorks from "../assets/how-it-works.gif";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useViewTransition } from "@/hooks/use-view-transition";
 
 function HeroSection() {
-  const navigate = useNavigate();
+  const navigate = useViewTransition();
 
   return (
     <section
@@ -60,7 +60,7 @@ function HeroSection() {
 }
 
 function Features() {
-  const navigate = useNavigate();
+  const navigate = useViewTransition();
 
   const features = [
     {
