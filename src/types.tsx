@@ -78,8 +78,8 @@ export type ActivityLevel =
   | "sedentary"
   | "light"
   | "moderate"
-  | "active"
-  | "very_active";
+  | "very_active"
+  | "extra_active";
 
 export interface User {
   id?: number;

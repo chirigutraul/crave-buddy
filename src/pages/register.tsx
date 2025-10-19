@@ -14,13 +14,7 @@ import {
   FieldSet,
 } from "@/components/ui/field";
 import BackgroundImage from "@/assets/background-image.jpeg";
-
-type ActivityLevel =
-  | "sedentary"
-  | "light"
-  | "moderate"
-  | "active"
-  | "very_active";
+import type { ActivityLevel } from "@/types";
 
 interface FormData {
   name: string;
@@ -275,23 +269,23 @@ function Register() {
                       },
                       {
                         value: "light",
-                        label: "Light Active",
+                        label: "Lightly Active",
                         description: "1-3 times per week",
                       },
                       {
                         value: "moderate",
-                        label: "Moderate Active",
+                        label: "Moderately Active",
                         description: "4-5 times per week",
-                      },
-                      {
-                        value: "active",
-                        label: "Active",
-                        description:
-                          "Daily exercise or intense exercise 3-4 times per week",
                       },
                       {
                         value: "very_active",
                         label: "Very Active",
+                        description:
+                          "Daily exercise or intense exercise 3-4 times per week",
+                      },
+                      {
+                        value: "extra_active",
+                        label: "Extra Active",
                         description: "Intense exercise 6-7 times per week",
                       },
                     ].map((option) => (
