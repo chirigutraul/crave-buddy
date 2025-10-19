@@ -24,8 +24,8 @@ export interface Recipe {
 }
 
 export interface RecipePair {
-  classicRecipe: Omit<Recipe, "id" | "image">;
-  improvedRecipe: Omit<Recipe, "id" | "image">;
+  classicRecipe: Omit<Recipe, "id">;
+  improvedRecipe: Omit<Recipe, "id">;
 }
 
 export type HungerLevel =

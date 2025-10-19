@@ -8,6 +8,7 @@ import { CheckboxList, CheckboxListSkeleton } from "@/components/CheckboxList";
 import { Button } from "@/components/ui/button";
 import { PromptApiService } from "@/services/prompt-api.service";
 import { recipeService } from "@/services/recipe.service";
+import { ImageService } from "@/services/image.service";
 import { useEffect, useState, useRef } from "react";
 import { parseRecipeResponse } from "@/lib/utils";
 import { formatIngredient } from "@/lib/recipe-utils";
@@ -98,6 +99,20 @@ function CreateRecipe() {
       console.log("Classic Recipe:", recipes.classicRecipe);
       console.log("Improved Recipe:", recipes.improvedRecipe);
 
+      // Fetch image from Pexels for the improved recipe
+      console.log("Fetching image for:", recipes.improvedRecipe.name);
+      const imageUrl = await ImageService.searchRecipeImage(
+        recipes.improvedRecipe.name
+      );
+
+      // Use fetched image or fallback to placeholder
+      const finalImageUrl = imageUrl || ImageService.getFallbackImage();
+      console.log("Using image URL:", finalImageUrl);
+
+      // Add image URL to both recipes
+      recipes.improvedRecipe.image = finalImageUrl;
+      recipes.classicRecipe.image = finalImageUrl;
+
       setGeneratedRecipes(recipes);
     } catch (error) {
       console.error("Error generating meal:", error);
@@ -113,7 +128,9 @@ function CreateRecipe() {
       setIsSaving(true);
       const recipeToSave: Omit<Recipe, "id"> = {
         name: generatedRecipes.improvedRecipe.name,
-        image: "/placeholder-image.png", // You can update this with a real image later
+        image:
+          generatedRecipes.improvedRecipe.image ||
+          ImageService.getFallbackImage(),
         category: generatedRecipes.improvedRecipe.category,
         portionSize: generatedRecipes.improvedRecipe.portionSize,
         ingredients: generatedRecipes.improvedRecipe.ingredients,

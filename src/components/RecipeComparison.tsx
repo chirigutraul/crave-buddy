@@ -3,8 +3,8 @@ import RecipeCard, { RecipeCardSkeleton } from "./RecipeCard";
 import { ChevronsRight } from "lucide-react";
 
 interface RecipeComparisonProps {
-  classicRecipe: Omit<Recipe, "id" | "image">;
-  improvedRecipe: Omit<Recipe, "id" | "image">;
+  classicRecipe: Omit<Recipe, "id">;
+  improvedRecipe: Omit<Recipe, "id">;
 }
 
 function RecipeComparison({
@@ -17,12 +17,14 @@ function RecipeComparison({
         recipe={classicRecipe}
         comparisonRecipe={improvedRecipe}
         title="Classic Recipe"
+        image={classicRecipe.image}
       />
       <ChevronsRight size={64} className="text-green-600" />
       <RecipeCard
         recipe={improvedRecipe}
         comparisonRecipe={classicRecipe}
         title="Improved Recipe"
+        image={improvedRecipe.image}
       />
     </div>
   );
