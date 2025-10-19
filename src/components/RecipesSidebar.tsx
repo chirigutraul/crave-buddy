@@ -1,5 +1,6 @@
 import { CloudSun, Sun, Moon, Cookie, Calendar } from "lucide-react";
 import { useLiveQuery } from "dexie-react-hooks";
+import { useNavigate } from "react-router-dom";
 import { db } from "@/services/db";
 import type { Recipe, MealTime } from "@/types";
 
@@ -22,6 +23,8 @@ import {
 } from "@/components/ui/accordion";
 
 export function RecipesSidebar() {
+  const navigate = useNavigate();
+
   // Use useLiveQuery to observe recipe changes in real-time
   const recipes = useLiveQuery(
     () => db.recipes.toArray(),
@@ -103,7 +106,12 @@ export function RecipesSidebar() {
                                 key={`${category.mealType}-${recipe.id}`}
                               >
                                 <SidebarMenuButton asChild>
-                                  <div className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
+                                  <div
+                                    className="cursor-pointer text-sm text-muted-foreground hover:text-foreground"
+                                    onClick={() =>
+                                      navigate(`/recipe/${recipe.id}`)
+                                    }
+                                  >
                                     {recipe.name}
                                   </div>
                                 </SidebarMenuButton>

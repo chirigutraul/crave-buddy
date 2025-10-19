@@ -4,6 +4,7 @@ import CreateRecipe from "./pages/create-recipe";
 import MyWeek from "./pages/my-week";
 import Profile from "./pages/profile";
 import Register from "./pages/register";
+import ViewRecipe from "./pages/view-recipe";
 import { WeekMealProvider } from "./contexts/WeekMealContext";
 import { UserProvider } from "./contexts/User";
 
@@ -16,6 +17,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/register" element={<Register />} />
             <Route path="/create-recipe" element={<CreateRecipe />} />
+            <Route path="/recipe/:id" element={<ViewRecipe />} />
             <Route path="/my-week" element={<MyWeek />} />
             <Route path="/profile" element={<Profile />} />
           </Routes>

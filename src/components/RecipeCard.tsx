@@ -9,6 +9,8 @@ interface RecipeCardProps {
   recipe?: Omit<Recipe, "id" | "image">;
   comparisonRecipe?: Omit<Recipe, "id" | "image">;
   title?: string;
+  size?: "default" | "large";
+  image?: string;
 }
 
 interface NutritionalMetric {
@@ -18,7 +20,13 @@ interface NutritionalMetric {
   lowerIsBetter: boolean;
 }
 
-function RecipeCard({ recipe, comparisonRecipe, title }: RecipeCardProps) {
+function RecipeCard({
+  recipe,
+  comparisonRecipe,
+  title,
+  size = "default",
+  image,
+}: RecipeCardProps) {
   const getImprovementIndicator = (
     currentValue: number,
     previousValue: number,
@@ -138,19 +146,44 @@ function RecipeCard({ recipe, comparisonRecipe, title }: RecipeCardProps) {
       })()
     : [];
 
+  const cardClassName =
+    size === "large" ? "w-128 py-6 gap-6" : "w-64 py-4 gap-4";
+  const headerClassName = size === "large" ? "px-6" : "px-4";
+  const contentClassName = size === "large" ? "px-6" : "px-4";
+  const imageClassName =
+    size === "large"
+      ? "rounded-lg w-full aspect-square object-cover"
+      : "rounded-lg w-full aspect-square object-cover";
+
   return (
-    <Card className="w-64 py-4 gap-4">
-      <CardHeader className="px-4">
+    <Card className={cardClassName}>
+      <CardHeader className={headerClassName}>
         <img
-          src={fruitSalad}
-          alt="Fruit Salad"
-          className="rounded-lg w-full aspect-square object-cover"
+          src={image || fruitSalad}
+          alt={title || "Recipe"}
+          className={imageClassName}
         />
       </CardHeader>
-      <CardContent className="px-4">
-        {title && <h6 className="mb-3 text-neutral-800">{title}</h6>}
-        <p className="mb-2 font-semibold">Nutritional values:</p>
-        <ul className="list-none font-medium text-neutral-500">
+      <CardContent className={contentClassName}>
+        {title && (
+          <h6
+            className={`mb-3 text-neutral-800 ${
+              size === "large" ? "text-xl font-bold" : ""
+            }`}
+          >
+            {title}
+          </h6>
+        )}
+        <p
+          className={`mb-2 font-semibold ${size === "large" ? "text-lg" : ""}`}
+        >
+          Nutritional values:
+        </p>
+        <ul
+          className={`list-none font-medium text-neutral-500 ${
+            size === "large" ? "space-y-2" : ""
+          }`}
+        >
           {metrics.map(renderNutritionalValue)}
         </ul>
       </CardContent>
