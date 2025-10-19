@@ -9,6 +9,8 @@ import { PromptApiService } from "@/services/prompt-api.service";
 import type { MealTime } from "@/types";
 import { useState, useEffect, useRef } from "react";
 import { calculateNutritionalValues } from "@/lib/recipe-utils";
+import { useUser } from "@/contexts/User";
+import { calculateBMR, calculateDailyCalories } from "@/lib/utils";
 
 function MyWeek() {
   const {
@@ -19,13 +21,53 @@ function MyWeek() {
     getRecipeById,
     resetWeekMeals,
   } = useWeekMeal();
+  const { user } = useUser();
   const [weekName, setWeekName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [savedPlanId, setSavedPlanId] = useState<number | null>(null);
   const promptApiServiceRef = useRef<PromptApiService | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [dailyCalorieLimit, setDailyCalorieLimit] = useState(2200);
+
+  // Calculate user's daily calorie target with 10% deficit
+  const calculateUserDailyTarget = (): number => {
+    if (!user || !user.activityLevel) {
+      return 2000; // Default fallback
+    }
+    const bmr = calculateBMR({
+      weight: user.weight,
+      height: user.height,
+      age: user.age,
+      sex: user.sex,
+    });
+    const tdee = calculateDailyCalories({
+      bmr,
+      activityLevel: user.activityLevel,
+    });
+    // Apply 10% deficit
+    return Math.round(tdee - tdee * 0.1);
+  };
+
+  // Calculate user's maintenance calories (TDEE without deficit)
+  const calculateUserMaintenanceCalories = (): number => {
+    if (!user || !user.activityLevel) {
+      return 2222; // Default fallback (2000 / 0.9)
+    }
+    const bmr = calculateBMR({
+      weight: user.weight,
+      height: user.height,
+      age: user.age,
+      sex: user.sex,
+    });
+    const tdee = calculateDailyCalories({
+      bmr,
+      activityLevel: user.activityLevel,
+    });
+    return Math.round(tdee);
+  };
+
+  const dailyCalorieTarget = calculateUserDailyTarget();
+  const dailyMaintenanceCalories = calculateUserMaintenanceCalories();
 
   const days: DayOfWeek[] = [
     "Monday",
@@ -80,10 +122,10 @@ function MyWeek() {
   const weeklyTotals = calculateWeeklyTotals();
   const averageDailyCalories = Math.round(weeklyTotals.calories / 7);
 
-  // Mock values - will be replaced with actual user data later
-  const mockDailyCalorieTarget = 2200; // This should come from user profile
-  const mockWeeklyCalorieTarget = mockDailyCalorieTarget * 7;
-  const calorieDeficit = mockWeeklyCalorieTarget - weeklyTotals.calories;
+  // Calculate weekly values
+  const weeklyMaintenanceCalories = dailyMaintenanceCalories * 7;
+  const totalWeeklyCalories = weeklyTotals.calories;
+  const totalWeeklyDeficit = weeklyMaintenanceCalories - totalWeeklyCalories;
 
   const handleGenerateWithAI = async () => {
     if (!promptApiServiceRef.current || !isReady) {
@@ -102,12 +144,12 @@ function MyWeek() {
 
       console.log("Generating weekly plan with AI...");
       console.log("Recipes count:", recipes.length);
-      console.log("Daily calorie limit:", dailyCalorieLimit);
+      console.log("Daily calorie target:", dailyCalorieTarget);
 
       const generatedPlan =
         await promptApiServiceRef.current.generateWeeklyPlan(
           recipes,
-          dailyCalorieLimit
+          dailyCalorieTarget
         );
 
       console.log("Generated plan:", generatedPlan);
@@ -159,7 +201,7 @@ function MyWeek() {
           }
         });
         console.log(
-          `  ➜ TOTAL: ${dayTotal} kcal / ${dailyCalorieLimit} kcal limit`
+          `  ➜ TOTAL: ${dayTotal} kcal / ${dailyCalorieTarget} kcal target`
         );
       });
       console.log("================================\n");
@@ -265,17 +307,22 @@ function MyWeek() {
     <RecipeLayout>
       <div className="h-full p-8 rounded-2xl bg-neutral-50/90 border-1 border-neutral-400 shadow-xl drop-shadow-xl flex flex-col">
         <div className="flex justify-between items-center mb-4 flex-shrink-0 gap-4">
-          <h5 className="text-neutral-800 whitespace-nowrap">
-            Plan your meals for the following week
-          </h5>
+          <div className="flex flex-col">
+            <h5 className="text-neutral-800 whitespace-nowrap">
+              Plan your meals for the following week
+            </h5>
+            <div className="text-sm text-neutral-600 mt-1 space-y-1">
+              <p>
+                Maintenance kcalories:{" "}
+                {dailyMaintenanceCalories.toLocaleString()} kcal
+              </p>
+              <p>
+                Target kcalories for fat loss:{" "}
+                {dailyCalorieTarget.toLocaleString()} kcal
+              </p>
+            </div>
+          </div>
           <div className="flex items-center gap-3 flex-1 justify-end">
-            <Input
-              type="number"
-              placeholder="Daily calorie limit"
-              value={dailyCalorieLimit}
-              onChange={(e) => setDailyCalorieLimit(Number(e.target.value))}
-              className="max-w-[150px]"
-            />
             <Button
               onClick={handleGenerateWithAI}
               variant="outline"
@@ -390,43 +437,53 @@ function MyWeek() {
               </div>
             </div>
 
-            {/* Calorie Deficit/Surplus Card */}
+            {/* Calorie Balance Card */}
             <div className="bg-white rounded-lg p-4 border border-neutral-300 shadow-sm">
               <h6 className="text-sm font-bold text-neutral-800 mb-3">
                 Calorie Balance
               </h6>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-neutral-600">Target (week):</span>
+                  <span className="text-neutral-600">
+                    Weekly calories (maintenance):
+                  </span>
                   <span className="font-semibold text-neutral-800">
-                    {mockWeeklyCalorieTarget.toLocaleString()} kcal
+                    {weeklyMaintenanceCalories.toLocaleString()} kcal
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-neutral-600">Planned (week):</span>
+                  <span className="text-neutral-600">
+                    Total weekly calories:
+                  </span>
                   <span className="font-semibold text-neutral-800">
-                    {weeklyTotals.calories.toLocaleString()} kcal
+                    {totalWeeklyCalories.toLocaleString()} kcal
                   </span>
                 </div>
                 <div className="pt-2 border-t border-neutral-200">
                   <div className="flex justify-between items-center">
                     <span className="text-neutral-600 font-medium">
-                      {calorieDeficit >= 0 ? "Deficit:" : "Surplus:"}
+                      {totalWeeklyDeficit >= 0
+                        ? "Total weekly deficit:"
+                        : "Total weekly surplus:"}
                     </span>
                     <span
                       className={`font-bold text-lg ${
-                        calorieDeficit >= 0
+                        totalWeeklyDeficit >= 0
                           ? "text-green-600"
                           : "text-orange-600"
                       }`}
                     >
-                      {Math.abs(calorieDeficit).toLocaleString()} kcal
+                      {Math.abs(totalWeeklyDeficit).toLocaleString()} kcal
                     </span>
                   </div>
                   <p className="text-xs text-neutral-500 mt-2">
-                    {calorieDeficit >= 0
-                      ? "You're on track for weight loss"
-                      : "You're exceeding your calorie target"}
+                    {totalWeeklyDeficit >= 0
+                      ? `Avg ${Math.round(
+                          totalWeeklyDeficit / 7
+                        )} kcal deficit per day`
+                      : `Avg ${Math.round(
+                          Math.abs(totalWeeklyDeficit) / 7
+                        )} kcal surplus per day`}
                   </p>
                 </div>
               </div>
