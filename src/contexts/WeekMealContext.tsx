@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useCallback } from "react";
 import type { ReactNode } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/services/db";
@@ -41,6 +41,8 @@ interface WeekMealContextType {
     mealTime: MealTime,
     quantity: number
   ) => void;
+  loadWeekMeals: (meals: WeekMeals) => void;
+  resetWeekMeals: () => void;
   getRecipesByCategory: (category: MealTime) => Recipe[];
   getRecipeById: (id: number) => Recipe | undefined;
   recipes: Recipe[];
@@ -142,12 +144,22 @@ export function WeekMealProvider({ children }: { children: ReactNode }) {
     return recipes.find((recipe) => recipe.id === id);
   };
 
+  const loadWeekMeals = useCallback((meals: WeekMeals) => {
+    setWeekMeals(meals);
+  }, []);
+
+  const resetWeekMeals = useCallback(() => {
+    setWeekMeals(initialWeekMeals);
+  }, []);
+
   return (
     <WeekMealContext.Provider
       value={{
         weekMeals,
         updateMeal,
         updateQuantity,
+        loadWeekMeals,
+        resetWeekMeals,
         getRecipesByCategory,
         getRecipeById,
         recipes,

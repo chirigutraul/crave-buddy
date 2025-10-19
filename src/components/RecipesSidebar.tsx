@@ -145,7 +145,10 @@ export function RecipesSidebar() {
                 {weeklyPlans.map((plan) => (
                   <SidebarMenuItem key={plan.id}>
                     <SidebarMenuButton asChild>
-                      <div className="cursor-pointer">
+                      <div
+                        className="cursor-pointer"
+                        onClick={() => navigate(`/weekly-plan/${plan.id}`)}
+                      >
                         <Calendar />
                         <span>{plan.name}</span>
                       </div>

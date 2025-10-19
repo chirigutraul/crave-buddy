@@ -5,27 +5,21 @@ import type { DayOfWeek } from "@/contexts/WeekMealContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { weeklyPlanService } from "@/services/weekly-plan.service";
-import { PromptApiService } from "@/services/prompt-api.service";
 import type { MealTime } from "@/types";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { calculateNutritionalValues } from "@/lib/recipe-utils";
+import { useParams } from "react-router-dom";
+import { useViewTransition } from "@/hooks/use-view-transition";
+import { Loader2 } from "lucide-react";
 
-function MyWeek() {
-  const {
-    weekMeals,
-    updateMeal,
-    updateQuantity,
-    recipes,
-    getRecipeById,
-    resetWeekMeals,
-  } = useWeekMeal();
+function ViewWeeklyPlan() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useViewTransition();
+  const { weekMeals, getRecipeById, loadWeekMeals } = useWeekMeal();
   const [weekName, setWeekName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const [savedPlanId, setSavedPlanId] = useState<number | null>(null);
-  const promptApiServiceRef = useRef<PromptApiService | null>(null);
-  const [isReady, setIsReady] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [dailyCalorieLimit, setDailyCalorieLimit] = useState(2200);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const days: DayOfWeek[] = [
     "Monday",
@@ -36,6 +30,46 @@ function MyWeek() {
     "Saturday",
     "Sunday",
   ];
+
+  // Load the weekly plan from database
+  useEffect(() => {
+    const loadPlan = async () => {
+      if (!id) {
+        alert("Invalid weekly plan ID");
+        navigate("/my-week");
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        const plan = await weeklyPlanService.getWeeklyPlanById(Number(id));
+
+        if (!plan) {
+          alert("Weekly plan not found");
+          navigate("/my-week");
+          return;
+        }
+
+        setWeekName(plan.name);
+        loadWeekMeals(plan.meals);
+      } catch (error) {
+        console.error("Error loading weekly plan:", error);
+        alert("Failed to load weekly plan");
+        navigate("/my-week");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadPlan();
+  }, [id, navigate, loadWeekMeals]);
+
+  // Track changes
+  useEffect(() => {
+    if (!isLoading) {
+      setHasUnsavedChanges(true);
+    }
+  }, [weekMeals, isLoading]);
 
   // Calculate weekly totals
   const calculateWeeklyTotals = () => {
@@ -85,116 +119,30 @@ function MyWeek() {
   const mockWeeklyCalorieTarget = mockDailyCalorieTarget * 7;
   const calorieDeficit = mockWeeklyCalorieTarget - weeklyTotals.calories;
 
-  const handleGenerateWithAI = async () => {
-    if (!promptApiServiceRef.current || !isReady) {
-      alert("AI service is not ready yet. Please wait...");
-      return;
-    }
-
-    if (recipes.length === 0) {
-      alert("No recipes available. Please create some recipes first.");
-      return;
-    }
-
-    try {
-      setIsGenerating(true);
-      setSavedPlanId(null); // Reset saved state
-
-      console.log("Generating weekly plan with AI...");
-      console.log("Recipes count:", recipes.length);
-      console.log("Daily calorie limit:", dailyCalorieLimit);
-
-      const generatedPlan =
-        await promptApiServiceRef.current.generateWeeklyPlan(
-          recipes,
-          dailyCalorieLimit
-        );
-
-      console.log("Generated plan:", generatedPlan);
-
-      // Update the week meals using updateMeal and updateQuantity functions
-      Object.entries(generatedPlan).forEach(([day, meals]) => {
-        const dayKey = day as DayOfWeek;
-        Object.entries(meals).forEach(([mealTime, mealEntry]) => {
-          const mt = mealTime as MealTime;
-          const entry = mealEntry as {
-            recipeId: number | null;
-            quantity: number;
-          };
-          if (entry.recipeId !== null) {
-            updateMeal(dayKey, mt, entry.recipeId);
-            updateQuantity(dayKey, mt, entry.quantity);
-          }
-        });
-      });
-
-      // Log the generated plan with calorie breakdown
-      console.log("\n=== AI Generated Weekly Plan ===");
-      Object.entries(generatedPlan).forEach(([day, meals]) => {
-        console.log(`\n${day}:`);
-        let dayTotal = 0;
-        Object.entries(meals).forEach(([mealTime, mealEntry]) => {
-          const entry = mealEntry as {
-            recipeId: number | null;
-            quantity: number;
-          };
-          if (entry.recipeId !== null) {
-            const recipe = getRecipeById(entry.recipeId);
-            if (recipe) {
-              const nutritionalValues = calculateNutritionalValues(
-                recipe,
-                entry.quantity
-              );
-              console.log(
-                `  ${mealTime}: ${recipe.name} - ${entry.quantity}g (${nutritionalValues.calories} kcal)`
-              );
-              dayTotal += nutritionalValues.calories;
-            } else {
-              console.log(
-                `  ${mealTime}: Recipe ID ${entry.recipeId} (not found)`
-              );
-            }
-          } else {
-            console.log(`  ${mealTime}: Not selected`);
-          }
-        });
-        console.log(
-          `  ➜ TOTAL: ${dayTotal} kcal / ${dailyCalorieLimit} kcal limit`
-        );
-      });
-      console.log("================================\n");
-
-      alert("Weekly plan generated successfully!");
-    } catch (error) {
-      console.error("Error generating weekly plan:", error);
-      alert("Failed to generate weekly plan. Please try again.");
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const handleSaveWeek = async () => {
+  const handleUpdateWeek = async () => {
     if (!weekName.trim()) {
       alert("Please enter a name for your weekly plan");
+      return;
+    }
+
+    if (!id) {
+      alert("Invalid weekly plan ID");
       return;
     }
 
     try {
       setIsSaving(true);
 
-      const weeklyPlan = {
+      await weeklyPlanService.updateWeeklyPlan(Number(id), {
         name: weekName.trim(),
         meals: weekMeals,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      });
 
-      const planId = await weeklyPlanService.createWeeklyPlan(weeklyPlan);
-      setSavedPlanId(planId);
+      setHasUnsavedChanges(false);
 
-      // Log the week meals with recipe IDs and calories
-      console.log("\n=== Week Meal Plan Saved ===");
-      console.log("Plan ID:", planId);
+      // Log the updated week meals with recipe IDs and calories
+      console.log("\n=== Week Meal Plan Updated ===");
+      console.log("Plan ID:", id);
       console.log("Plan Name:", weekName);
       Object.entries(weekMeals).forEach(([day, meals]) => {
         console.log(`\n${day}:`);
@@ -224,64 +172,40 @@ function MyWeek() {
         });
         console.log(`  ➜ TOTAL: ${dayTotal} kcal`);
       });
-      console.log("============================\n");
+      console.log("==============================\n");
 
-      alert(`Weekly plan "${weekName}" saved successfully!`);
+      alert(`Weekly plan "${weekName}" updated successfully!`);
     } catch (error) {
-      console.error("Error saving weekly plan:", error);
-      alert("Failed to save weekly plan. Please try again.");
+      console.error("Error updating weekly plan:", error);
+      alert("Failed to update weekly plan. Please try again.");
     } finally {
       setIsSaving(false);
     }
   };
 
-  // Reset week meals when component mounts (clean slate for new plan)
-  useEffect(() => {
-    resetWeekMeals();
-  }, [resetWeekMeals]);
-
-  useEffect(() => {
-    const initializeService = async () => {
-      try {
-        promptApiServiceRef.current = new PromptApiService();
-        const availability =
-          await promptApiServiceRef.current.getAvailability();
-        if (availability !== "available") {
-          console.log(`Prompt API is ${availability}. Please wait...`);
-        }
-
-        await promptApiServiceRef.current.init();
-        setIsReady(true);
-        console.log("Prompt API initialized for weekly planning");
-      } catch (error) {
-        console.error("Failed to initialize Prompt API:", error);
-      }
-    };
-
-    initializeService();
-  }, []);
+  if (isLoading) {
+    return (
+      <RecipeLayout>
+        <div className="h-full flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="h-8 w-8 animate-spin text-neutral-600" />
+            <p className="text-neutral-600">Loading weekly plan...</p>
+          </div>
+        </div>
+      </RecipeLayout>
+    );
+  }
 
   return (
     <RecipeLayout>
       <div className="h-full p-8 rounded-2xl bg-neutral-50/90 border-1 border-neutral-400 shadow-xl drop-shadow-xl flex flex-col">
         <div className="flex justify-between items-center mb-4 flex-shrink-0 gap-4">
           <h5 className="text-neutral-800 whitespace-nowrap">
-            Plan your meals for the following week
+            View and edit your weekly plan
           </h5>
           <div className="flex items-center gap-3 flex-1 justify-end">
-            <Input
-              type="number"
-              placeholder="Daily calorie limit"
-              value={dailyCalorieLimit}
-              onChange={(e) => setDailyCalorieLimit(Number(e.target.value))}
-              className="max-w-[150px]"
-            />
-            <Button
-              onClick={handleGenerateWithAI}
-              variant="outline"
-              disabled={!isReady || isGenerating || recipes.length === 0}
-            >
-              {isGenerating ? "Generating..." : "Generate with AI"}
+            <Button onClick={() => navigate("/my-week")} variant="outline">
+              Back to Create
             </Button>
             <Input
               type="text"
@@ -289,16 +213,20 @@ function MyWeek() {
               value={weekName}
               onChange={(e) => {
                 setWeekName(e.target.value);
-                setSavedPlanId(null); // Reset saved state when user changes name
+                setHasUnsavedChanges(true);
               }}
               className="max-w-xs"
             />
             <Button
-              onClick={handleSaveWeek}
+              onClick={handleUpdateWeek}
               variant="default"
-              disabled={isSaving || !weekName.trim() || savedPlanId !== null}
+              disabled={isSaving || !weekName.trim() || !hasUnsavedChanges}
             >
-              {isSaving ? "Saving..." : savedPlanId ? "Saved" : "Save Week"}
+              {isSaving
+                ? "Updating..."
+                : hasUnsavedChanges
+                ? "Update"
+                : "Up to date"}
             </Button>
           </div>
         </div>
@@ -438,4 +366,4 @@ function MyWeek() {
   );
 }
 
-export default MyWeek;
+export default ViewWeeklyPlan;
