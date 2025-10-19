@@ -5,6 +5,7 @@ import RecipeCard from "@/components/RecipeCard";
 import { Button } from "@/components/ui/button";
 import { CheckboxListCard } from "@/components/CheckboxListCard";
 import { db } from "@/services/db";
+import { ImageService } from "@/services/image.service";
 import type { Recipe } from "@/types";
 import { formatIngredient } from "@/lib/recipe-utils";
 import { ChevronLeft } from "lucide-react";
@@ -78,7 +79,11 @@ const ViewRecipe = () => {
               recipe={recipe}
               title={recipe.name}
               size="large"
-              image={recipe.image}
+              image={
+                recipe.image && !recipe.image.includes("placeholder-image.png")
+                  ? recipe.image
+                  : ImageService.getFallbackImage()
+              }
             />
           </div>
 

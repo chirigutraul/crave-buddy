@@ -1,3 +1,5 @@
+import placeholderImage from "@/assets/placeholder-image.jpg";
+
 const PEXELS_API_KEY = import.meta.env.VITE_PEXELS_API_KEY || "";
 const PEXELS_BASE_URL = "https://api.pexels.com/v1";
 
@@ -77,6 +79,6 @@ export class ImageService {
    * @returns Placeholder image URL
    */
   static getFallbackImage(): string {
-    return "/placeholder-image.png";
+    return placeholderImage;
   }
 }

@@ -12,6 +12,7 @@ import { ImageService } from "@/services/image.service";
 import { useEffect, useState, useRef } from "react";
 import { parseRecipeResponse } from "@/lib/utils";
 import { formatIngredient } from "@/lib/recipe-utils";
+import placeHolderImage from "@/assets/placeholder-image.jpg";
 
 function CreateRecipe() {
   const promptApiServiceRef = useRef<PromptApiService | null>(null);
@@ -26,7 +27,7 @@ function CreateRecipe() {
 
   const classicRecipe: Recipe = {
     id: 1,
-    image: "/placeholder-image.png",
+    image: placeHolderImage,
     name: "Classic Spaghetti Bolognese",
     category: ["lunch", "dinner"],
     portionSize: 400,
@@ -55,7 +56,7 @@ function CreateRecipe() {
 
   const improvedRecipe: Recipe = {
     id: 2,
-    image: "/placeholder-image.png",
+    image: placeHolderImage,
     name: "Healthy Spaghetti Bolognese",
     category: ["lunch", "dinner"],
     portionSize: 450,

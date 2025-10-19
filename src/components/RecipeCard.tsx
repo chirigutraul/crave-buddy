@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import fruitSalad from "../assets/fruit-salad.jpg";
+import placeHolderImage from "@/assets/placeholder-image.jpg";
 import type { Recipe } from "@/types";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -147,7 +147,7 @@ function RecipeCard({
     : [];
 
   const cardClassName =
-    size === "large" ? "w-128 py-6 gap-6" : "w-64 py-4 gap-4";
+    size === "large" ? "w-full max-w-md py-6 gap-6" : "w-64 py-4 gap-4";
   const headerClassName = size === "large" ? "px-6" : "px-4";
   const contentClassName = size === "large" ? "px-6" : "px-4";
   const imageClassName =
@@ -159,7 +159,7 @@ function RecipeCard({
     <Card className={cardClassName}>
       <CardHeader className={headerClassName}>
         <img
-          src={image || fruitSalad}
+          src={image || placeHolderImage}
           alt={title || "Recipe"}
           className={imageClassName}
         />
