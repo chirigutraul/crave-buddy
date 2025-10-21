@@ -11,15 +11,42 @@ import { calculateNutritionalValues } from "@/lib/recipe-utils";
 import { useParams } from "react-router-dom";
 import { useViewTransition } from "@/hooks/use-view-transition";
 import { Loader2 } from "lucide-react";
+import { useUser } from "@/contexts/User";
+import {
+  calculateBMR,
+  calculateDailyCalories,
+  getCurrentWeight,
+} from "@/lib/utils";
 
 function ViewWeeklyPlan() {
   const { id } = useParams<{ id: string }>();
   const navigate = useViewTransition();
   const { weekMeals, getRecipeById, loadWeekMeals } = useWeekMeal();
+  const { user } = useUser();
   const [weekName, setWeekName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // Calculate user's maintenance calories (TDEE without deficit)
+  const calculateUserMaintenanceCalories = (): number => {
+    if (!user || !user.activityLevel) {
+      return 2222; // Default fallback (2000 / 0.9)
+    }
+    const bmr = calculateBMR({
+      weight: getCurrentWeight(user.weight),
+      height: user.height,
+      age: user.age,
+      sex: user.sex,
+    });
+    const tdee = calculateDailyCalories({
+      bmr,
+      activityLevel: user.activityLevel,
+    });
+    return Math.round(tdee);
+  };
+
+  const dailyMaintenanceCalories = calculateUserMaintenanceCalories();
 
   const days: DayOfWeek[] = [
     "Monday",
@@ -114,10 +141,10 @@ function ViewWeeklyPlan() {
   const weeklyTotals = calculateWeeklyTotals();
   const averageDailyCalories = Math.round(weeklyTotals.calories / 7);
 
-  // Mock values - will be replaced with actual user data later
-  const mockDailyCalorieTarget = 2200; // This should come from user profile
-  const mockWeeklyCalorieTarget = mockDailyCalorieTarget * 7;
-  const calorieDeficit = mockWeeklyCalorieTarget - weeklyTotals.calories;
+  // Calculate weekly values
+  const weeklyMaintenanceCalories = dailyMaintenanceCalories * 7;
+  const totalWeeklyCalories = weeklyTotals.calories;
+  const totalWeeklyDeficit = weeklyMaintenanceCalories - totalWeeklyCalories;
 
   const handleUpdateWeek = async () => {
     if (!weekName.trim()) {
@@ -318,43 +345,53 @@ function ViewWeeklyPlan() {
               </div>
             </div>
 
-            {/* Calorie Deficit/Surplus Card */}
+            {/* Calorie Balance Card */}
             <div className="bg-white rounded-lg p-4 border border-neutral-300 shadow-sm">
               <h6 className="text-sm font-bold text-neutral-800 mb-3">
                 Calorie Balance
               </h6>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-neutral-600">Target (week):</span>
+                  <span className="text-neutral-600">
+                    Weekly calories (maintenance):
+                  </span>
                   <span className="font-semibold text-neutral-800">
-                    {mockWeeklyCalorieTarget.toLocaleString()} kcal
+                    {weeklyMaintenanceCalories.toLocaleString()} kcal
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-neutral-600">Planned (week):</span>
+                  <span className="text-neutral-600">
+                    Total weekly calories:
+                  </span>
                   <span className="font-semibold text-neutral-800">
-                    {weeklyTotals.calories.toLocaleString()} kcal
+                    {totalWeeklyCalories.toLocaleString()} kcal
                   </span>
                 </div>
                 <div className="pt-2 border-t border-neutral-200">
                   <div className="flex justify-between items-center">
                     <span className="text-neutral-600 font-medium">
-                      {calorieDeficit >= 0 ? "Deficit:" : "Surplus:"}
+                      {totalWeeklyDeficit >= 0
+                        ? "Total weekly deficit:"
+                        : "Total weekly surplus:"}
                     </span>
                     <span
                       className={`font-bold text-lg ${
-                        calorieDeficit >= 0
+                        totalWeeklyDeficit >= 0
                           ? "text-green-600"
                           : "text-orange-600"
                       }`}
                     >
-                      {Math.abs(calorieDeficit).toLocaleString()} kcal
+                      {Math.abs(totalWeeklyDeficit).toLocaleString()} kcal
                     </span>
                   </div>
                   <p className="text-xs text-neutral-500 mt-2">
-                    {calorieDeficit >= 0
-                      ? "You're on track for weight loss"
-                      : "You're exceeding your calorie target"}
+                    {totalWeeklyDeficit >= 0
+                      ? `Avg ${Math.round(
+                          totalWeeklyDeficit / 7
+                        )} kcal deficit per day`
+                      : `Avg ${Math.round(
+                          Math.abs(totalWeeklyDeficit) / 7
+                        )} kcal surplus per day`}
                   </p>
                 </div>
               </div>
