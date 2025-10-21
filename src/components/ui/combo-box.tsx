@@ -61,13 +61,15 @@ export function Combobox({
             className
           )}
         >
-          {value
-            ? options.find((option) => option.value === value)?.label
-            : placeholder}
-          <ChevronsUpDown className="opacity-50" />
+          <span className="truncate flex-1 text-left">
+            {value
+              ? options.find((option) => option.value === value)?.label
+              : placeholder}
+          </span>
+          <ChevronsUpDown className="opacity-50 flex-shrink-0 ml-2" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className={cn("p-0 rounded-md", className)}>
+      <PopoverContent className="p-0 w-80 rounded-md">
         <Command>
           <CommandInput placeholder={searchPlaceholder} className="h-9" />
           <CommandList>

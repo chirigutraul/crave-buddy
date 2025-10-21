@@ -106,7 +106,7 @@ function DayOfTheWeek({ day }: DayOfTheWeekProps) {
               placeholder="Select breakfast..."
               searchPlaceholder="Search breakfast..."
               emptyMessage="No breakfast found."
-              className="flex-1"
+              className="w-[200px]"
               unified={true}
             />
             <div className="relative w-16">
@@ -141,7 +141,7 @@ function DayOfTheWeek({ day }: DayOfTheWeekProps) {
               placeholder="Select lunch..."
               searchPlaceholder="Search lunch..."
               emptyMessage="No lunch found."
-              className="flex-1"
+              className="w-[200px]"
               unified={true}
             />
             <div className="relative w-16">
@@ -172,7 +172,7 @@ function DayOfTheWeek({ day }: DayOfTheWeekProps) {
               placeholder="Select snack..."
               searchPlaceholder="Search snack..."
               emptyMessage="No snack found."
-              className="flex-1"
+              className="w-[200px]"
               unified={true}
             />
             <div className="relative w-16">
@@ -203,7 +203,7 @@ function DayOfTheWeek({ day }: DayOfTheWeekProps) {
               placeholder="Select dinner..."
               searchPlaceholder="Search dinner..."
               emptyMessage="No dinner found."
-              className="flex-1"
+              className="w-[200px]"
               unified={true}
             />
             <div className="relative w-16">
