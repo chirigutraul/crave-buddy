@@ -62,16 +62,6 @@ const ViewRecipe = () => {
   return (
     <RecipeLayout>
       <div className="h-full w-full p-8 rounded-2xl bg-neutral-50/90 border-1 border-neutral-400 shadow-xl drop-shadow-xl">
-        {/* Back button */}
-        <Button
-          variant="ghost"
-          onClick={() => navigate(-1)}
-          className="mb-6 hover:bg-neutral-100/80"
-        >
-          <ChevronLeft className="w-4 h-4 mr-1" />
-          Back
-        </Button>
-
         {/* Main content */}
         <div className="grid grid-cols-1 lg:grid-cols-2">
           {/* Left column - Recipe Card */}
