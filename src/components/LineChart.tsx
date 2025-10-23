@@ -21,7 +21,6 @@ import type { WeightEntry } from "@/types";
 
 interface WeightChartProps {
   weightEntries: WeightEntry[];
-  compact?: boolean;
 }
 
 const chartConfig = {
@@ -31,18 +30,19 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function WeightChart({
-  weightEntries,
-  compact = false,
-}: WeightChartProps) {
+export function WeightChart({ weightEntries }: WeightChartProps) {
   // Transform weight entries for the chart
   const chartData = weightEntries.map((entry) => ({
     date: new Date(entry.date).toLocaleDateString("en-US", {
-      month: "short",
+      month: "2-digit",
       day: "numeric",
     }),
     weight: entry.value,
-    fullDate: entry.date,
+    fullDate: new Date(entry.date).toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    }),
   }));
 
   // Calculate weight trend
@@ -66,22 +66,18 @@ export function WeightChart({
   return (
     <Card className={`gap-0 p-4`}>
       <CardHeader className="p-0">
-        <CardTitle className={compact ? "text-base" : ""}>
-          {compact ? "Progress" : "Weight Progress"}
-        </CardTitle>
-        {!compact && (
-          <CardDescription className="p-0">
-            {weightEntries.length > 0
-              ? `Tracking since ${new Date(
-                  weightEntries[0].date
-                ).toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                })}`
-              : "No weight entries yet"}
-          </CardDescription>
-        )}
+        <CardTitle className="text-base">Progress</CardTitle>
+        <CardDescription className="p-0">
+          {weightEntries.length > 0
+            ? `Tracking since ${new Date(
+                weightEntries[0].date
+              ).toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}`
+            : "No weight entries yet"}
+        </CardDescription>
       </CardHeader>
       <CardContent className="p-0">
         {chartData.length > 0 ? (
@@ -90,8 +86,8 @@ export function WeightChart({
               accessibilityLayer
               data={chartData}
               margin={{
-                left: compact ? 0 : 12,
-                right: compact ? 0 : 12,
+                left: -40,
+                right: 12,
                 top: 5,
                 bottom: 5,
               }}
@@ -102,21 +98,25 @@ export function WeightChart({
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
-                tickFormatter={(value) =>
-                  compact ? value.split(" ")[0] : value
-                }
-                style={{ fontSize: compact ? "10px" : "12px" }}
+                tickFormatter={(value) => value.split(" ")[0]}
+                style={{ fontSize: "10px" }}
               />
               <YAxis
                 tickLine={false}
                 axisLine={false}
-                tickMargin={8}
                 domain={["auto", "auto"]}
-                style={{ fontSize: compact ? "10px" : "12px" }}
+                style={{ fontSize: "10px" }}
               />
               <ChartTooltip
                 cursor={false}
-                content={<ChartTooltipContent indicator="dot" hideLabel />}
+                content={
+                  <ChartTooltipContent
+                    indicator="dot"
+                    labelFormatter={(value, payload) => {
+                      return payload[0]?.payload?.fullDate || value;
+                    }}
+                  />
+                }
               />
               <Area
                 dataKey="weight"
@@ -124,7 +124,7 @@ export function WeightChart({
                 fill="var(--color-weight)"
                 fillOpacity={0.4}
                 stroke="var(--color-weight)"
-                strokeWidth={compact ? 1.5 : 2}
+                strokeWidth={1.5}
               />
             </AreaChart>
           </ChartContainer>
@@ -132,14 +132,12 @@ export function WeightChart({
           <div
             className={`flex items-center justify-center h-32 text-neutral-500`}
           >
-            {compact
-              ? "No entries yet"
-              : "Add your first weight entry to see the chart"}
+            No entries yet
           </div>
         )}
       </CardContent>
-      {trend && !compact && (
-        <CardFooter className="flex-col items-start gap-2 text-sm">
+      {trend && (
+        <CardFooter className="flex-col items-start gap-2 text-sm p-0 mt-2">
           <div className="flex gap-2 leading-none font-medium">
             {trend.direction === "up" && (
               <>
@@ -162,37 +160,9 @@ export function WeightChart({
               </>
             )}
           </div>
-          <div className="text-muted-foreground leading-none">
+          <div className="text-muted-foreground leading-none text-xs">
             Based on {weightEntries.length} weight{" "}
             {weightEntries.length === 1 ? "entry" : "entries"}
-          </div>
-        </CardFooter>
-      )}
-      {trend && compact && (
-        <CardFooter className="p-0">
-          <div className="flex gap-1.5 items-center text-xs">
-            {trend.direction === "up" && (
-              <>
-                <TrendingUp className="h-3 w-3 text-red-500" />
-                <span className="text-red-600">
-                  +{Math.abs(parseFloat(trend.diff))} kg
-                </span>
-              </>
-            )}
-            {trend.direction === "down" && (
-              <>
-                <TrendingDown className="h-3 w-3 text-green-500" />
-                <span className="text-green-600">
-                  -{Math.abs(parseFloat(trend.diff))} kg
-                </span>
-              </>
-            )}
-            {trend.direction === "stable" && (
-              <>
-                <Minus className="h-3 w-3" />
-                <span>Stable</span>
-              </>
-            )}
           </div>
         </CardFooter>
       )}

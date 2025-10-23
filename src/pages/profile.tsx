@@ -82,20 +82,20 @@ function Profile() {
 
   return (
     <RecipeLayout>
-      <div className="h-full p-8 rounded-2xl bg-neutral-50/90 border-1 border-neutral-400 shadow-xl drop-shadow-xl">
+      <div className="h-full p-4 2xl:p-8 rounded-2xl bg-neutral-50/90 border-1 border-neutral-400 shadow-xl drop-shadow-xl">
         <h5 className="text-neutral-800 mb-4">Hello, {user?.name}!</h5>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 2xl:grid-cols-4 gap-4">
           {/* Left column - Nutritional Information */}
-          <div className="lg:col-span-1">
+          <div className="col-span-1 2xl:col-span-2">
             <h6 className="text-neutral-800 mb-4">Nutritional information</h6>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 bg-white rounded-lg shadow-sm border border-neutral-200 w-88">
+              <div className="p-4 bg-white rounded-lg shadow-sm border border-neutral-200 w-full">
                 <p className="text-xs text-neutral-500 mb-1">
                   BMR (Basal Metabolic Rate)
                 </p>
-                <p className="text-2xl font-semibold text-neutral-800">
+                <p className="font-semibold text-neutral-800">
                   {Math.round(bmr)}{" "}
                   <span className="text-sm font-normal text-neutral-600">
                     kcal/day
@@ -106,44 +106,42 @@ function Profile() {
                 </p>
               </div>
 
-              <div className="p-4 bg-white rounded-lg shadow-sm border border-neutral-200 w-88">
+              <div className="p-4 bg-white rounded-lg shadow-sm border border-neutral-200 w-full">
                 <p className="text-xs text-neutral-500 mb-1">
                   Maintenance Calories (TDEE)
                 </p>
-                <p className="text-2xl font-semibold text-neutral-800">
+                <p className="font-semibold text-neutral-800">
                   {Math.round(maintenanceCalories)}{" "}
                   <span className="text-sm font-normal text-neutral-600">
                     kcal/day
                   </span>
                 </p>
-                <p className="text-xs text-neutral-500 mt-1">
+                <p className=" text-neutral-500 mt-1">
                   Calories to maintain current weight
                 </p>
               </div>
 
-              <div className="p-4 bg-white rounded-lg shadow-sm border border-neutral-200 w-88">
-                <p className="text-xs text-neutral-500 mb-1">
+              <div className="p-4 bg-white rounded-lg shadow-sm border border-neutral-200 w-full">
+                <p className=" text-neutral-500 mb-1">
                   Target Calories (10% Deficit)
                 </p>
-                <p className="text-2xl font-semibold text-green-700">
+                <p className="font-semibold text-green-700">
                   {targetCaloriesDeficit}{" "}
                   <span className="text-sm font-normal text-neutral-600">
                     kcal/day
                   </span>
                 </p>
-                <p className="text-xs text-neutral-500 mt-1">
+                <p className=" text-neutral-500 mt-1">
                   Recommended for healthy weight loss
                 </p>
               </div>
 
-              <div className="p-4 bg-white rounded-lg shadow-sm border border-neutral-200 w-88">
-                <p className="text-xs text-neutral-500 mb-1">
-                  BMI (Body Mass Index)
-                </p>
-                <p className="text-2xl font-semibold text-neutral-800">
+              <div className="p-4 bg-white rounded-lg shadow-sm border border-neutral-200 w-full">
+                <p className=" text-neutral-500 mb-1">BMI (Body Mass Index)</p>
+                <p className="font-semibold text-neutral-800">
                   {bmi.toFixed(1)}
                 </p>
-                <p className="text-xs text-neutral-500 mt-1">
+                <p className=" text-neutral-500 mt-1">
                   {bmi < 18.5 && "Underweight"}
                   {bmi >= 18.5 && bmi < 25 && "Normal weight"}
                   {bmi >= 25 && bmi < 30 && "Overweight"}
@@ -154,11 +152,11 @@ function Profile() {
           </div>
 
           {/* Right column - Weight tracking */}
-          <div className="lg:col-span-1">
+          <div className="col-span-1 2xl:col-span-2">
             <div className="flex flex-col gap-4">
               <h6 className="text-neutral-800">Weight Tracking</h6>
 
-              <div className="w-128">
+              <div className="w-full">
                 <WeightChart weightEntries={user?.weight || []} />
               </div>
 
