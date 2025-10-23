@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import RecipeLayout from "@/layouts/RecipeLayout";
 import { useUser } from "@/contexts/User";
 import { WeightChart } from "@/components/LineChart";
@@ -10,11 +10,15 @@ import {
   calculateDailyCalories,
   calculateBMI,
 } from "@/lib/utils";
+import { PromptApiService } from "@/services/prompt-api.service";
+import { Sparkles } from "lucide-react";
 
 function Profile() {
   const { user, updateUser } = useUser();
   const [newWeight, setNewWeight] = useState("");
   const [isAdding, setIsAdding] = useState(false);
+  const [advice, setAdvice] = useState("");
+  const [isLoadingAdvice, setIsLoadingAdvice] = useState(false);
 
   const handleAddWeight = async () => {
     if (!user || !newWeight) return;
@@ -80,6 +84,38 @@ function Profile() {
       })
     : 0;
 
+  const generateAdvice = async () => {
+    if (!user || bmr === 0) return;
+
+    setIsLoadingAdvice(true);
+    try {
+      const promptService = new PromptApiService();
+      await promptService.init();
+
+      const response = await promptService.generateHealthAdvice({
+        bmr,
+        bmi,
+        maintenanceCalories,
+        targetCalories: targetCaloriesDeficit,
+      });
+
+      setAdvice(response);
+    } catch (error) {
+      console.error("Error generating advice:", error);
+      setAdvice(
+        "Stay consistent with your nutrition goals and listen to your body!"
+      );
+    } finally {
+      setIsLoadingAdvice(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user && bmr > 0) {
+      generateAdvice();
+    }
+  }, [user?.id, bmr, bmi, maintenanceCalories, targetCaloriesDeficit]);
+
   return (
     <RecipeLayout>
       <div className="h-full p-4 2xl:p-8 rounded-2xl bg-neutral-50/90 border-1 border-neutral-400 shadow-xl drop-shadow-xl">
@@ -90,7 +126,7 @@ function Profile() {
           <div className="col-span-1 2xl:col-span-2">
             <h6 className="text-neutral-800 mb-4">Nutritional information</h6>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div className="p-4 bg-white rounded-lg shadow-sm border border-neutral-200 w-full">
                 <p className="text-xs text-neutral-500 mb-1">
                   BMR (Basal Metabolic Rate)
@@ -148,6 +184,22 @@ function Profile() {
                   {bmi >= 30 && "Obese"}
                 </p>
               </div>
+            </div>
+
+            <h6 className="text-neutral-800 mb-4">CraveBuddy's Advice</h6>
+            <div className="p-4 bg-green-50 rounded-lg shadow-sm border border-green-200 flex items-center gap-3">
+              <div className="bg-gradient-to-br from-green-500 to-green-800 p-1.5 rounded-lg">
+                <Sparkles className="w-6 h-6 text-white flex-shrink-0" />
+              </div>
+              {isLoadingAdvice ? (
+                <p className="text-sm text-neutral-600 italic">
+                  Generating personalized advice...
+                </p>
+              ) : (
+                <p className="text-sm text-neutral-800">
+                  {advice || "Loading advice..."}
+                </p>
+              )}
             </div>
           </div>
 

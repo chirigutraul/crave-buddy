@@ -388,4 +388,27 @@ Return ONLY the JSON object. No markdown, no code blocks, no explanations.
 
     return weekMeals;
   }
+
+  async generateHealthAdvice(params: {
+    bmr: number;
+    bmi: number;
+    maintenanceCalories: number;
+    targetCalories: number;
+  }): Promise<string> {
+    const adviceSession = await this.session.clone();
+
+    const prompt = `Based on the following health metrics, provide a single, concise one-liner advice (maximum 20 words) for healthy living:
+- BMR: ${Math.round(params.bmr)} kcal/day
+- BMI: ${params.bmi.toFixed(1)}
+- Maintenance Calories: ${Math.round(params.maintenanceCalories)} kcal/day
+- Target Calories (10% deficit): ${params.targetCalories} kcal/day
+
+Provide ONLY the advice text, no introductions or explanations.`;
+
+    console.log("Generating health advice...");
+    const response = await adviceSession.prompt(prompt);
+    console.log("Received advice:", response);
+
+    return response.trim();
+  }
 }

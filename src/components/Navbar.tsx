@@ -20,8 +20,13 @@ const Navbar = ({ inRecipePage = false }: { inRecipePage?: boolean }) => {
   const navigate = useViewTransition();
 
   return (
-    <nav className="h-16 px-16 py-2 flex items-center justify-between border-b border-gray-200 bg-neutral-50">
-      <img src={logo64} alt="CraveBuddy Logo" className="h-full" />
+    <nav className="h-16 px-16 py-2 flex cursor-pointer items-center justify-between border-b border-gray-200 bg-neutral-50">
+      <img
+        src={logo64}
+        alt="CraveBuddy Logo"
+        className="h-full"
+        onClick={() => navigate("/")}
+      />
 
       <div className="flex gap-8">
         {inRecipePage
