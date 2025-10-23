@@ -48,26 +48,13 @@ function Profile() {
   return (
     <RecipeLayout>
       <div className="h-full p-8 rounded-2xl bg-neutral-50/90 border-1 border-neutral-400 shadow-xl drop-shadow-xl">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2">
           {/* Left column - Main content */}
-          <div className="lg:col-span-3 flex flex-col gap-6">
-            <div>
-              <h5 className="text-neutral-800 mb-4">Hello, {user?.name}!</h5>
-              <DailyCheckIn />
-            </div>
-
-            <div>
-              <h6 className="text-neutral-800 mb-2">Mood Summary</h6>
-              <div className="rounded-lg">
-                <p className="text-sm text-neutral-600">
-                  Based on your check-ins, you have been feeling:
-                </p>
-              </div>
-            </div>
-          </div>
 
           {/* Right column - Weight tracking */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-1">
+            <h5 className="text-neutral-800 mb-4">Hello, {user?.name}!</h5>
+
             <div className="flex flex-col gap-4">
               <div>
                 <h6 className="text-neutral-800 mb-2">Weight Tracking</h6>
