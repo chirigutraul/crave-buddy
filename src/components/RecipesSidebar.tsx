@@ -89,7 +89,7 @@ export function RecipesSidebar() {
                       value={category.title}
                       className="border-none"
                     >
-                      <AccordionTrigger className="hover:no-underline hover:bg-sidebar-accent hover:text-sidebar-accent-foreground px-2 py-1.5 rounded-md">
+                      <AccordionTrigger className="hover:no-underline hover:bg-neutral-200/70 hover:text-sidebar-accent-foreground px-2 py-1.5 rounded-md cursor-pointer">
                         <div className="flex items-center gap-2">
                           {category.icon}
                           <span>{category.title}</span>
@@ -99,13 +99,16 @@ export function RecipesSidebar() {
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="pb-0">
-                        <SidebarMenu className="ml-6">
+                        <SidebarMenu>
                           {categoryRecipes.length > 0 ? (
                             categoryRecipes.map((recipe) => (
                               <SidebarMenuItem
                                 key={`${category.mealType}-${recipe.id}`}
                               >
-                                <SidebarMenuButton asChild>
+                                <SidebarMenuButton
+                                  asChild
+                                  className="hover:bg-neutral-200/70"
+                                >
                                   <div
                                     className="cursor-pointer text-sm text-muted-foreground hover:text-foreground"
                                     onClick={() =>

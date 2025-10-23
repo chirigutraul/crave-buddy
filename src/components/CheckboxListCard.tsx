@@ -28,7 +28,7 @@ export function CheckboxListCard({
       <CardContent>
         <ul className="space-y-2">
           {items.map((item, index) => (
-            <li key={index} className="flex items-start gap-3">
+            <li key={index} className="flex items-end gap-2 cursor-pointer">
               <Checkbox id={`${prefix}-${index}`} className="mt-0.5" />
               <label
                 htmlFor={`${prefix}-${index}`}
