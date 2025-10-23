@@ -81,6 +81,25 @@ export function calculateDailyCalories({
   return bmr * activityMultipliers[activityLevel];
 }
 
+/**
+ * Calculates Body Mass Index (BMI)
+ * @param params.weight - Weight in kilograms
+ * @param params.height - Height in centimeters
+ * @returns BMI value
+ * Formula: weight (kg) / (height (m))^2
+ */
+export function calculateBMI({
+  weight,
+  height,
+}: {
+  weight: number;
+  height: number;
+}): number {
+  // Convert height from cm to meters
+  const heightInMeters = height / 100;
+  return weight / (heightInMeters * heightInMeters);
+}
+
 export function parseRecipeResponse(response: string): RecipePair {
   let jsonString = response.trim();
 
