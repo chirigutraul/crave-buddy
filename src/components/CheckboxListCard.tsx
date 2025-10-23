@@ -5,12 +5,14 @@ interface CheckboxListCardProps {
   title: string;
   items: string[];
   idPrefix?: string;
+  action?: React.ReactNode;
 }
 
 export function CheckboxListCard({
   title,
   items,
   idPrefix,
+  action,
 }: CheckboxListCardProps) {
   // Use idPrefix if provided, otherwise generate from title
   const prefix = idPrefix || title.toLowerCase().replace(/\s+/g, "-");
@@ -18,7 +20,10 @@ export function CheckboxListCard({
   return (
     <Card className="bg-white/95 backdrop-blur-sm">
       <CardHeader className="gap-0">
-        <h5 className="font-bold text-neutral-800">{title}</h5>
+        <div className="flex items-center justify-between">
+          <h5 className="font-bold text-neutral-800">{title}</h5>
+          {action}
+        </div>
       </CardHeader>
       <CardContent>
         <ul className="space-y-2">

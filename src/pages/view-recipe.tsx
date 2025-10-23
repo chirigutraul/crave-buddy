@@ -8,7 +8,7 @@ import { db } from "@/services/db";
 import { ImageService } from "@/services/image.service";
 import type { Recipe } from "@/types";
 import { formatIngredient } from "@/lib/recipe-utils";
-import { ChevronLeft } from "lucide-react";
+import { Share } from "lucide-react";
 import { useViewTransition } from "@/hooks/use-view-transition";
 
 const ViewRecipe = () => {
@@ -16,6 +16,10 @@ const ViewRecipe = () => {
   const navigate = useViewTransition();
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const handleShare = () => {
+    alert("share");
+  };
 
   useEffect(() => {
     const loadRecipe = async () => {
@@ -83,10 +87,30 @@ const ViewRecipe = () => {
             <CheckboxListCard
               title="Grocery list"
               items={recipe.ingredients.map(formatIngredient)}
+              action={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleShare}
+                  className="h-8 w-8 p-0 cursor-pointer"
+                >
+                  <Share className="h-4 w-4" />
+                </Button>
+              }
             />
             <CheckboxListCard
               title="Preparation steps"
               items={recipe.instructions}
+              action={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleShare}
+                  className="h-8 w-8 p-0 cursor-pointer"
+                >
+                  <Share className="h-4 w-4" />
+                </Button>
+              }
             />
             <Button
               size="lg"
