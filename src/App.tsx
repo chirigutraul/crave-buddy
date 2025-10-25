@@ -8,6 +8,7 @@ import ViewRecipe from "./pages/view-recipe";
 import ViewWeeklyPlan from "./pages/view-weekly-plan";
 import { WeekMealProvider } from "./contexts/WeekMealContext";
 import { UserProvider } from "./contexts/User";
+import CreateLeftoverMeal from "./pages/create-leftover-meal";
 
 function App() {
   return (
@@ -18,6 +19,10 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/register" element={<Register />} />
             <Route path="/create-recipe" element={<CreateRecipe />} />
+            <Route
+              path="/create-leftover-meal"
+              element={<CreateLeftoverMeal />}
+            />
             <Route path="/recipe/:id" element={<ViewRecipe />} />
             <Route path="/my-week" element={<MyWeek />} />
             <Route path="/weekly-plan/:id" element={<ViewWeeklyPlan />} />

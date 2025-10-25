@@ -13,8 +13,9 @@ const Navbar = ({ inRecipePage = false }: { inRecipePage?: boolean }) => {
   ];
 
   const userLinks = [
-    { label: "Generate meal", link: "/create-recipe" },
-    { label: "My week", link: "/my-week" },
+    { label: "Meal generation", link: "/create-recipe" },
+    { label: "Weekly plan", link: "/my-week" },
+    { label: "Leftover meal", link: "/create-leftover-meal" },
   ];
 
   const navigate = useViewTransition();

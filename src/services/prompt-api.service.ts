@@ -411,4 +411,78 @@ Provide ONLY the advice text, no introductions or explanations.`;
 
     return response.trim();
   }
+
+  async getRecipeFromLeftovers(leftoverIngredients: string): Promise<string> {
+    const clonedSession = await this.session.clone();
+    const prompt = `I have the following leftover ingredients: ${leftoverIngredients}
+
+Based on these leftover ingredients, please provide TWO recipes in JSON format:
+1. A classic recipe that uses as many of these ingredients as possible
+2. A healthier improved version with additional healthy ingredient suggestions, lower in kcalories
+
+Please categorize the recipes into the following categories: breakfast, lunch, snack, dinner.
+The recipe can be in many categories. For example, some lunch recipes can also be suitable for dinner, or some snacks can also be suitable for breakfast. 
+If the recipe is suitable for multiple categories, include all of them.
+
+IMPORTANT INSTRUCTIONS:
+- Try to use as many of the provided leftover ingredients as possible
+- You can suggest additional ingredients to complete the recipe, but prioritize using the leftovers
+- Provide ingredients as structured objects with quantity, unit, and name
+- Use DECIMAL numbers for quantities (e.g., 0.5, 0.25, 0.75), NOT fractions (not 1/2, 1/4, 3/4)
+- Provide portionSize as the total weight in grams for ONE serving
+- Provide nutritionalValuesPer100g (not per portion)
+- Make sure the ingredients match the portion size
+- Return VALID JSON ONLY - no trailing commas, no comments, no extra text
+- DO NOT include any text before or after the JSON object
+
+Return the response in this exact JSON format:
+{
+  "classicRecipe": {
+    "name": "recipe name",
+    "category": ["breakfast", "lunch", "snack", "dinner"],
+    "portionSize": 350,
+    "ingredients": [
+      { "quantity": 200, "unit": "ml", "name": "milk" },
+      { "quantity": 50, "unit": "g", "name": "oats" },
+      { "quantity": 0.5, "unit": "cup", "name": "blueberries" },
+      { "quantity": 1, "unit": "piece", "name": "banana" }
+    ],
+    "instructions": ["step 1", "step 2"],
+    "nutritionalValuesPer100g": {
+      "calories": 120,
+      "protein": 5,
+      "carbohydrates": 15,
+      "fat": 3,
+      "fiber": 2
+    }
+  },
+  "improvedRecipe": {
+    "name": "healthier recipe name",
+    "category": ["breakfast", "lunch", "snack", "dinner"],
+    "portionSize": 350,
+    "ingredients": [
+      { "quantity": 200, "unit": "ml", "name": "almond milk" },
+      { "quantity": 60, "unit": "g", "name": "steel-cut oats" },
+      { "quantity": 0.25, "unit": "cup", "name": "chia seeds" },
+      { "quantity": 1, "unit": "piece", "name": "banana" }
+    ],
+    "instructions": ["step 1", "step 2"],
+    "nutritionalValuesPer100g": {
+      "calories": 95,
+      "protein": 4,
+      "carbohydrates": 12,
+      "fat": 2,
+      "fiber": 3
+    }
+  }
+}
+
+IMPORTANT: Return ONLY the JSON object above. No additional text, explanations, or markdown formatting.`;
+
+    console.log("Sending leftover ingredients prompt to API...");
+    const response = await clonedSession.prompt(prompt);
+    console.log("Received leftover recipe response:", response);
+
+    return response;
+  }
 }
