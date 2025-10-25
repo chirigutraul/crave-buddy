@@ -4,13 +4,23 @@ import { useWeekMeal } from "@/contexts/WeekMealContext";
 import type { DayOfWeek } from "@/contexts/WeekMealContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { weeklyPlanService } from "@/services/weekly-plan.service";
 import type { MealTime } from "@/types";
 import { useState, useEffect } from "react";
-import { calculateNutritionalValues } from "@/lib/recipe-utils";
+import {
+  calculateNutritionalValues,
+  generateWeeklyPlanMarkdown,
+  downloadWeeklyPlanMarkdownFile,
+} from "@/lib/recipe-utils";
 import { useParams } from "react-router-dom";
 import { useViewTransition } from "@/hooks/use-view-transition";
-import { Loader2 } from "lucide-react";
+import { Loader2, Share, FileDown } from "lucide-react";
 import { useUser } from "@/contexts/User";
 import {
   calculateBMR,
@@ -210,6 +220,19 @@ function ViewWeeklyPlan() {
     }
   };
 
+  const handleExportMarkdown = () => {
+    const markdown = generateWeeklyPlanMarkdown({
+      weekName: weekName || "Weekly Plan",
+      weekMeals,
+      getRecipeById,
+      weeklyTotals,
+      averageDailyCalories,
+      dailyMaintenanceCalories,
+    });
+
+    downloadWeeklyPlanMarkdownFile(weekName || "weekly-plan", markdown);
+  };
+
   if (isLoading) {
     return (
       <RecipeLayout>
@@ -231,9 +254,23 @@ function ViewWeeklyPlan() {
             View and edit your weekly plan
           </h5>
           <div className="flex items-center gap-3 flex-1 justify-end">
-            <Button onClick={() => navigate("/my-week")} variant="outline">
-              Back to Create
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Share className="h-4 w-4" />
+                  Share
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={handleExportMarkdown}
+                  className="gap-2 cursor-pointer"
+                >
+                  <FileDown className="h-4 w-4" />
+                  Export as Markdown
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Input
               type="text"
               placeholder="Week plan name (e.g., 'Week of Jan 15')"
