@@ -121,7 +121,7 @@ function Profile() {
       <div className="h-full p-4 2xl:p-8 rounded-2xl bg-neutral-50/90 border-1 border-neutral-400 shadow-xl drop-shadow-xl">
         <h5 className="text-neutral-800 mb-4">Hello, {user?.name}!</h5>
 
-        <div className="grid grid-cols-1 2xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 2xl:grid-cols-4 gap-8">
           {/* Left column - Nutritional Information */}
           <div className="col-span-1 2xl:col-span-2">
             <h6 className="text-neutral-800 mb-4">Nutritional information</h6>

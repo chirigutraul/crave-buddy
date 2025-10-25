@@ -4,11 +4,17 @@ import RecipeLayout from "@/layouts/RecipeLayout";
 import RecipeCard from "@/components/RecipeCard";
 import { Button } from "@/components/ui/button";
 import { CheckboxListCard } from "@/components/CheckboxListCard";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { db } from "@/services/db";
 import { ImageService } from "@/services/image.service";
 import type { Recipe } from "@/types";
-import { formatIngredient } from "@/lib/recipe-utils";
-import { Share } from "lucide-react";
+import { formatIngredient, downloadMarkdownFile } from "@/lib/recipe-utils";
+import { Share, FileDown } from "lucide-react";
 import { useViewTransition } from "@/hooks/use-view-transition";
 
 const ViewRecipe = () => {
@@ -17,8 +23,10 @@ const ViewRecipe = () => {
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const handleShare = () => {
-    alert("share");
+  const handleExportMarkdown = () => {
+    if (recipe) {
+      downloadMarkdownFile(recipe);
+    }
   };
 
   useEffect(() => {
@@ -66,6 +74,27 @@ const ViewRecipe = () => {
   return (
     <RecipeLayout>
       <div className="h-full w-full p-8 rounded-2xl bg-neutral-50/90 border-1 border-neutral-400 shadow-xl drop-shadow-xl">
+        {/* Header with Share Button */}
+        <div className="flex justify-end items-center mb-6">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Share className="h-4 w-4" />
+                Share
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={handleExportMarkdown}
+                className="gap-2 cursor-pointer"
+              >
+                <FileDown className="h-4 w-4" />
+                Export as Markdown
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
         {/* Main content */}
         <div className="grid grid-cols-1 lg:grid-cols-2">
           {/* Left column - Recipe Card */}
@@ -87,30 +116,10 @@ const ViewRecipe = () => {
             <CheckboxListCard
               title="Grocery list"
               items={recipe.ingredients.map(formatIngredient)}
-              action={
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleShare}
-                  className="h-8 w-8 p-0 cursor-pointer"
-                >
-                  <Share className="h-4 w-4" />
-                </Button>
-              }
             />
             <CheckboxListCard
               title="Preparation steps"
               items={recipe.instructions}
-              action={
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleShare}
-                  className="h-8 w-8 p-0 cursor-pointer"
-                >
-                  <Share className="h-4 w-4" />
-                </Button>
-              }
             />
             <Button
               size="lg"
