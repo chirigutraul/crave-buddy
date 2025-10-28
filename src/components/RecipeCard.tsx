@@ -1,16 +1,16 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import placeHolderImage from "@/assets/placeholder-image.jpg";
 import type { Recipe } from "@/types";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { calculateNutritionalValues } from "@/lib/recipe-utils";
 
 interface RecipeCardProps {
-  recipe?: Omit<Recipe, "id" | "image">;
-  comparisonRecipe?: Omit<Recipe, "id" | "image">;
+  recipe?: Partial<Omit<Recipe, "id" | "image">>;
+  comparisonRecipe?: Partial<Omit<Recipe, "id" | "image">>;
   title?: string;
   size?: "default" | "large";
   image?: string;
+  isLoading?: boolean;
 }
 
 interface NutritionalMetric {
@@ -26,6 +26,7 @@ function RecipeCard({
   title,
   size = "default",
   image,
+  isLoading = false,
 }: RecipeCardProps) {
   const getImprovementIndicator = (
     currentValue: number,
@@ -82,8 +83,12 @@ function RecipeCard({
 
   const getComparisonValue = (
     label: string,
-    recipe: Omit<Recipe, "id" | "image">
+    recipe: Partial<Omit<Recipe, "id" | "image">>
   ): number | undefined => {
+    if (!recipe.nutritionalValuesPer100g || !recipe.portionSize) {
+      return undefined;
+    }
+
     const nutritionalValues = calculateNutritionalValues(
       recipe as Recipe,
       recipe.portionSize
@@ -94,7 +99,7 @@ function RecipeCard({
         return nutritionalValues.calories;
       case "Protein":
         return nutritionalValues.protein;
-      case "Carbohydrates":
+      case "Carbs":
         return nutritionalValues.carbohydrates;
       case "Fat":
         return nutritionalValues.fat;
@@ -105,46 +110,47 @@ function RecipeCard({
     }
   };
 
-  const metrics: NutritionalMetric[] = recipe
-    ? (() => {
-        const nutritionalValues = calculateNutritionalValues(
-          recipe as Recipe,
-          recipe.portionSize
-        );
-        return [
-          {
-            value: nutritionalValues.calories,
-            label: "Calories",
-            unit: "kcal",
-            lowerIsBetter: true,
-          },
-          {
-            value: nutritionalValues.protein,
-            label: "Protein",
-            unit: "g",
-            lowerIsBetter: false,
-          },
-          {
-            value: nutritionalValues.carbohydrates,
-            label: "Carbohydrates",
-            unit: "g",
-            lowerIsBetter: true,
-          },
-          {
-            value: nutritionalValues.fat,
-            label: "Fat",
-            unit: "g",
-            lowerIsBetter: true,
-          },
-          {
-            value: nutritionalValues.fiber,
-            label: "Fiber",
-            unit: "g",
-            lowerIsBetter: false,
-          },
-        ];
-      })()
-    : [];
+  const metrics: NutritionalMetric[] =
+    recipe && recipe.nutritionalValuesPer100g && recipe.portionSize
+      ? (() => {
+          const nutritionalValues = calculateNutritionalValues(
+            recipe as Recipe,
+            recipe.portionSize
+          );
+          return [
+            {
+              value: nutritionalValues.calories,
+              label: "Calories",
+              unit: "kcal",
+              lowerIsBetter: true,
+            },
+            {
+              value: nutritionalValues.protein,
+              label: "Protein",
+              unit: "g",
+              lowerIsBetter: false,
+            },
+            {
+              value: nutritionalValues.carbohydrates,
+              label: "Carbs",
+              unit: "g",
+              lowerIsBetter: true,
+            },
+            {
+              value: nutritionalValues.fat,
+              label: "Fat",
+              unit: "g",
+              lowerIsBetter: true,
+            },
+            {
+              value: nutritionalValues.fiber,
+              label: "Fiber",
+              unit: "g",
+              lowerIsBetter: false,
+            },
+          ];
+        })()
+      : [];
 
   const cardClassName =
     size === "large" ? "w-full max-w-md py-6 gap-6" : "w-64 py-4 gap-4";
@@ -158,36 +164,71 @@ function RecipeCard({
   return (
     <Card className={cardClassName}>
       <CardHeader className={headerClassName}>
-        <img
-          src={image || placeHolderImage}
-          alt={title || "Recipe"}
-          className={imageClassName}
-        />
+        {!image ? (
+          <Skeleton className="w-full aspect-square rounded-lg" />
+        ) : (
+          <img src={image} alt={title || "Recipe"} className={imageClassName} />
+        )}
       </CardHeader>
       <CardContent className={contentClassName}>
-        {title && (
-          <h6
-            className={`mb-3 text-neutral-800 ${
-              size === "large" ? "text-xl font-bold" : ""
-            }`}
-          >
-            {title}
-          </h6>
+        {isLoading ? (
+          <RecipeCardContentSkeleton />
+        ) : (
+          <>
+            {title && (
+              <h6
+                className={`mb-3 text-neutral-800 ${
+                  size === "large" ? "text-xl font-bold" : ""
+                }`}
+              >
+                {title}
+              </h6>
+            )}
+            <p
+              className={`mb-2 font-semibold ${
+                size === "large" ? "text-lg" : ""
+              }`}
+            >
+              Nutritional values:
+            </p>
+            <ul
+              className={`list-none font-medium text-neutral-500 ${
+                size === "large" ? "space-y-2" : ""
+              }`}
+            >
+              {metrics.map((metric) => renderNutritionalValue(metric))}
+            </ul>
+          </>
         )}
-        <p
-          className={`mb-2 font-semibold ${size === "large" ? "text-lg" : ""}`}
-        >
-          Nutritional values:
-        </p>
-        <ul
-          className={`list-none font-medium text-neutral-500 ${
-            size === "large" ? "space-y-2" : ""
-          }`}
-        >
-          {metrics.map(renderNutritionalValue)}
-        </ul>
       </CardContent>
     </Card>
+  );
+}
+
+function RecipeCardContentSkeleton() {
+  return (
+    <>
+      <Skeleton className="h-[24px] w-32 mb-3" />
+      <Skeleton className="h-[19.2px] w-40 mb-2" />
+      <ul className="list-none space-y-2">
+        <li className="flex justify-between items-center">
+          <Skeleton className="h-[24px] w-20" />
+          <Skeleton className="h-[24px] w-24" />
+        </li>
+        <li className="flex justify-between items-center">
+          <Skeleton className="h-[24px] w-16" />
+          <Skeleton className="h-[24px] w-20" />
+        </li>
+        <li className="flex justify-between items-center">
+          <Skeleton className="h-[24px] w-28" />
+          <Skeleton className="h-[24px] w-20" />
+        </li>
+        <li className="flex justify-between items-center">
+          <Skeleton className="h-[24px] w-12" />
+          <Skeleton className="h-[24px] w-20" />
+        </li>
+      </ul>
+    </>
   );
 }
 
@@ -198,26 +239,7 @@ export function RecipeCardSkeleton() {
         <Skeleton className="w-full aspect-square rounded-lg" />
       </CardHeader>
       <CardContent className="px-4">
-        <Skeleton className="h-[24px] w-32 mb-3" />
-        <Skeleton className="h-[19.2px] w-40 mb-2" />
-        <ul className="list-none space-y-2">
-          <li className="flex justify-between items-center">
-            <Skeleton className="h-[24px] w-20" />
-            <Skeleton className="h-[24px] w-24" />
-          </li>
-          <li className="flex justify-between items-center">
-            <Skeleton className="h-[24px] w-16" />
-            <Skeleton className="h-[24px] w-20" />
-          </li>
-          <li className="flex justify-between items-center">
-            <Skeleton className="h-[24px] w-28" />
-            <Skeleton className="h-[24px] w-20" />
-          </li>
-          <li className="flex justify-between items-center">
-            <Skeleton className="h-[24px] w-12" />
-            <Skeleton className="h-[24px] w-20" />
-          </li>
-        </ul>
+        <RecipeCardContentSkeleton />
       </CardContent>
     </Card>
   );

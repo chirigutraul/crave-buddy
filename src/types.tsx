@@ -38,6 +38,29 @@ export interface GeneratedRecipe extends Omit<Recipe, "id"> {
   };
 }
 
+export interface PartialGeneratedRecipe {
+  name?: string;
+  image?: string;
+  category?: MealTime[];
+  portionSize?: number;
+  ingredients?: Ingredient[];
+  instructions?: string[];
+  nutritionalValuesPer100g?: {
+    calories: number;
+    protein: number;
+    carbohydrates: number;
+    fat: number;
+    fiber: number;
+  };
+  classicRecipeNutritionalValues?: {
+    calories: number;
+    protein: number;
+    carbohydrates: number;
+    fat: number;
+    fiber: number;
+  };
+}
+
 export type HungerLevel =
   | "starving"
   | "hungry"

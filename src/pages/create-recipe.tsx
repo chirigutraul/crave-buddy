@@ -3,14 +3,13 @@ import { Textarea } from "@/components/ui/textarea";
 import RecipeComparison, {
   RecipeComparisonSkeleton,
 } from "@/components/RecipeComparison";
-import type { Recipe, GeneratedRecipe } from "@/types";
+import type { Recipe, GeneratedRecipe, PartialGeneratedRecipe } from "@/types";
 import { CheckboxList, CheckboxListSkeleton } from "@/components/CheckboxList";
 import { Button } from "@/components/ui/button";
 import { PromptApiService } from "@/services/prompt-api.service";
 import { recipeService } from "@/services/recipe.service";
 import { ImageService } from "@/services/image.service";
 import { useEffect, useState, useRef } from "react";
-import { parseGeneratedRecipe } from "@/lib/utils";
 import { formatIngredient } from "@/lib/recipe-utils";
 import placeHolderImage from "@/assets/placeholder-image.jpg";
 
@@ -21,6 +20,8 @@ function CreateRecipe() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedRecipe, setGeneratedRecipe] =
     useState<GeneratedRecipe | null>(null);
+  const [partialRecipe, setPartialRecipe] =
+    useState<PartialGeneratedRecipe | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [savedRecipeId, setSavedRecipeId] = useState<number | null>(null);
 
@@ -69,29 +70,76 @@ function CreateRecipe() {
     try {
       setIsGenerating(true);
       setSavedRecipeId(null); // Reset saved state when generating new recipe
+      setPartialRecipe({}); // Start with empty partial recipe
+      setGeneratedRecipe(null); // Clear previous recipe
       console.time("⏱️ Total meal generation time");
 
-      // Run recipe generation and image generation in parallel using the same cravings input
-      const [response, finalImageUrl] = await Promise.all([
-        promptApiServiceRef.current.getRecipe(cravings),
-        ImageService.getRecipeImage(cravings),
+      // Start all three requests in parallel (no await yet)
+      const imagePromise = ImageService.getRecipeImage(cravings);
+      const classicNutritionPromise =
+        promptApiServiceRef.current.getClassicRecipeNutrition(cravings);
+      const improvedRecipePromise =
+        promptApiServiceRef.current.getImprovedRecipe(cravings);
+
+      // Handle image completion first (usually fastest)
+      imagePromise.then((imageUrl) => {
+        console.log("✅ Image loaded");
+        setPartialRecipe((prev) => ({
+          ...prev,
+          image: imageUrl,
+        }));
+      });
+
+      // Handle classic nutritional values (lightweight, completes second)
+      classicNutritionPromise.then((response) => {
+        console.log("✅ Classic nutritional values loaded");
+        const classicNutrition = JSON.parse(response);
+        setPartialRecipe((prev) => ({
+          ...prev,
+          portionSize: classicNutrition.portionSize,
+          classicRecipeNutritionalValues:
+            classicNutrition.nutritionalValuesPer100g,
+        }));
+      });
+
+      // Handle improved recipe (heaviest, completes last)
+      const improvedRecipeResponse = await improvedRecipePromise;
+      console.log("✅ Improved recipe loaded");
+      const improvedRecipe = JSON.parse(improvedRecipeResponse);
+
+      // Update partial recipe with improved recipe data
+      setPartialRecipe((prev) => ({
+        ...prev,
+        ...improvedRecipe,
+      }));
+
+      // Wait for all to complete
+      const [finalImageUrl, classicNutritionResponse] = await Promise.all([
+        imagePromise,
+        classicNutritionPromise,
       ]);
 
       console.timeEnd("⏱️ Total meal generation time");
-      console.log("✅ AI Response (raw):", response);
 
-      const recipe = parseGeneratedRecipe(response);
-      console.log("Parsed recipe:", recipe);
+      // Parse final responses
+      const classicNutrition = JSON.parse(classicNutritionResponse);
+
+      // Combine into final recipe
+      const finalRecipe: GeneratedRecipe = {
+        ...improvedRecipe,
+        image: finalImageUrl,
+        classicRecipeNutritionalValues:
+          classicNutrition.nutritionalValuesPer100g,
+      };
+
+      console.log("Parsed recipe:", finalRecipe);
       console.log(
         "Classic Recipe Nutritional Values:",
-        recipe.classicRecipeNutritionalValues
+        finalRecipe.classicRecipeNutritionalValues
       );
-      console.log("Improved Recipe:", recipe);
 
-      // Add image to recipe
-      recipe.image = finalImageUrl;
-
-      setGeneratedRecipe(recipe);
+      setGeneratedRecipe(finalRecipe);
+      setPartialRecipe(null); // Clear partial recipe once complete
     } catch (error) {
       console.error("Error generating meal:", error);
     } finally {
@@ -169,10 +217,12 @@ function CreateRecipe() {
                 </Button>
               </div>
             </div>
-            {isGenerating ? (
+            {isGenerating && !partialRecipe ? (
               <RecipeComparisonSkeleton />
             ) : (
-              <RecipeComparison recipe={generatedRecipe || placeholderRecipe} />
+              <RecipeComparison
+                recipe={partialRecipe || generatedRecipe || placeholderRecipe}
+              />
             )}
             <p className="font-medium">
               Results of smart swap: you reduced the calories by{" "}
