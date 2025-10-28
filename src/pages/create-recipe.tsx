@@ -3,14 +3,14 @@ import { Textarea } from "@/components/ui/textarea";
 import RecipeComparison, {
   RecipeComparisonSkeleton,
 } from "@/components/RecipeComparison";
-import type { Recipe, RecipePair } from "@/types";
+import type { Recipe, GeneratedRecipe } from "@/types";
 import { CheckboxList, CheckboxListSkeleton } from "@/components/CheckboxList";
 import { Button } from "@/components/ui/button";
 import { PromptApiService } from "@/services/prompt-api.service";
 import { recipeService } from "@/services/recipe.service";
 import { ImageService } from "@/services/image.service";
 import { useEffect, useState, useRef } from "react";
-import { parseRecipeResponse } from "@/lib/utils";
+import { parseGeneratedRecipe } from "@/lib/utils";
 import { formatIngredient } from "@/lib/recipe-utils";
 import placeHolderImage from "@/assets/placeholder-image.jpg";
 
@@ -19,43 +19,13 @@ function CreateRecipe() {
   const [cravings, setCravings] = useState("");
   const [isReady, setIsReady] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedRecipes, setGeneratedRecipes] = useState<RecipePair | null>(
-    null
-  );
+  const [generatedRecipe, setGeneratedRecipe] =
+    useState<GeneratedRecipe | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [savedRecipeId, setSavedRecipeId] = useState<number | null>(null);
 
-  const classicRecipe: Recipe = {
-    id: 1,
-    image: placeHolderImage,
-    name: "Classic Spaghetti Bolognese",
-    category: ["lunch", "dinner"],
-    portionSize: 400,
-    ingredients: [
-      { quantity: 200, unit: "g", name: "spaghetti" },
-      { quantity: 100, unit: "g", name: "ground beef" },
-      { quantity: 1, unit: "piece", name: "onion, chopped" },
-      { quantity: 2, unit: "cloves", name: "garlic, minced" },
-      { quantity: 400, unit: "g", name: "canned tomatoes" },
-    ],
-    instructions: [
-      "Cook spaghetti according to package instructions.",
-      "In a pan, sauté onion and garlic until translucent.",
-      "Add ground beef and cook until browned.",
-      "Pour in canned tomatoes and simmer for 20 minutes.",
-      "Serve sauce over spaghetti.",
-    ],
-    nutritionalValuesPer100g: {
-      calories: 150,
-      protein: 6,
-      fat: 5,
-      carbohydrates: 20,
-      fiber: 1,
-    },
-  };
-
-  const improvedRecipe: Recipe = {
-    id: 2,
+  // Mock/placeholder recipe for initial display (prevents layout jumps)
+  const placeholderRecipe: GeneratedRecipe = {
     image: placeHolderImage,
     name: "Healthy Spaghetti Bolognese",
     category: ["lunch", "dinner"],
@@ -84,6 +54,13 @@ function CreateRecipe() {
       carbohydrates: 13,
       fiber: 2,
     },
+    classicRecipeNutritionalValues: {
+      calories: 150,
+      protein: 6,
+      fat: 5,
+      carbohydrates: 20,
+      fiber: 1,
+    },
   };
 
   const generateMeal = async () => {
@@ -92,28 +69,29 @@ function CreateRecipe() {
     try {
       setIsGenerating(true);
       setSavedRecipeId(null); // Reset saved state when generating new recipe
-      const response = await promptApiServiceRef.current.getRecipe(cravings);
-      console.log("AI Response (raw):", response);
+      console.time("⏱️ Total meal generation time");
 
-      const recipes = parseRecipeResponse(response);
-      console.log("Parsed recipes:", recipes);
-      console.log("Classic Recipe:", recipes.classicRecipe);
-      console.log("Improved Recipe:", recipes.improvedRecipe);
+      // Run recipe generation and image generation in parallel using the same cravings input
+      const [response, finalImageUrl] = await Promise.all([
+        promptApiServiceRef.current.getRecipe(cravings),
+        ImageService.getRecipeImage(cravings),
+      ]);
 
-      // Get recipe image with automatic fallback (AI → Pexels → placeholder)
-      const ingredientNames = recipes.improvedRecipe.ingredients.map(
-        (ing) => ing.name
+      console.timeEnd("⏱️ Total meal generation time");
+      console.log("✅ AI Response (raw):", response);
+
+      const recipe = parseGeneratedRecipe(response);
+      console.log("Parsed recipe:", recipe);
+      console.log(
+        "Classic Recipe Nutritional Values:",
+        recipe.classicRecipeNutritionalValues
       );
-      const finalImageUrl = await ImageService.getRecipeImage(
-        recipes.improvedRecipe.name,
-        ingredientNames
-      );
+      console.log("Improved Recipe:", recipe);
 
-      // Add image to both recipes
-      recipes.improvedRecipe.image = finalImageUrl;
-      recipes.classicRecipe.image = finalImageUrl;
+      // Add image to recipe
+      recipe.image = finalImageUrl;
 
-      setGeneratedRecipes(recipes);
+      setGeneratedRecipe(recipe);
     } catch (error) {
       console.error("Error generating meal:", error);
     } finally {
@@ -122,21 +100,18 @@ function CreateRecipe() {
   };
 
   const saveRecipe = async () => {
-    if (!generatedRecipes) return;
+    if (!generatedRecipe) return;
 
     try {
       setIsSaving(true);
       const recipeToSave: Omit<Recipe, "id"> = {
-        name: generatedRecipes.improvedRecipe.name,
-        image:
-          generatedRecipes.improvedRecipe.image ||
-          ImageService.getFallbackImage(),
-        category: generatedRecipes.improvedRecipe.category,
-        portionSize: generatedRecipes.improvedRecipe.portionSize,
-        ingredients: generatedRecipes.improvedRecipe.ingredients,
-        instructions: generatedRecipes.improvedRecipe.instructions,
-        nutritionalValuesPer100g:
-          generatedRecipes.improvedRecipe.nutritionalValuesPer100g,
+        name: generatedRecipe.name,
+        image: generatedRecipe.image || ImageService.getFallbackImage(),
+        category: generatedRecipe.category,
+        portionSize: generatedRecipe.portionSize,
+        ingredients: generatedRecipe.ingredients,
+        instructions: generatedRecipe.instructions,
+        nutritionalValuesPer100g: generatedRecipe.nutritionalValuesPer100g,
       };
 
       const recipeId = await recipeService.createRecipe(recipeToSave);
@@ -197,29 +172,22 @@ function CreateRecipe() {
             {isGenerating ? (
               <RecipeComparisonSkeleton />
             ) : (
-              <RecipeComparison
-                classicRecipe={generatedRecipes?.classicRecipe || classicRecipe}
-                improvedRecipe={
-                  generatedRecipes?.improvedRecipe || improvedRecipe
-                }
-              />
+              <RecipeComparison recipe={generatedRecipe || placeholderRecipe} />
             )}
-            {generatedRecipes && (
-              <p className="font-medium">
-                Results of smart swap: you reduced the calories by{" "}
-                {Math.round(
-                  (generatedRecipes.classicRecipe.nutritionalValuesPer100g
-                    .calories *
-                    generatedRecipes.classicRecipe.portionSize) /
-                    100 -
-                    (generatedRecipes.improvedRecipe.nutritionalValuesPer100g
-                      .calories *
-                      generatedRecipes.improvedRecipe.portionSize) /
-                      100
-                )}
-                kcal per portion and lowered the fats
-              </p>
-            )}
+            <p className="font-medium">
+              Results of smart swap: you reduced the calories by{" "}
+              {Math.round(
+                ((generatedRecipe || placeholderRecipe)
+                  .classicRecipeNutritionalValues.calories *
+                  (generatedRecipe || placeholderRecipe).portionSize) /
+                  100 -
+                  ((generatedRecipe || placeholderRecipe)
+                    .nutritionalValuesPer100g.calories *
+                    (generatedRecipe || placeholderRecipe).portionSize) /
+                    100
+              )}
+              kcal per portion and lowered the fats
+            </p>
           </div>
           <div className="flex flex-col gap-8">
             {isGenerating ? (
@@ -231,17 +199,13 @@ function CreateRecipe() {
               <>
                 <CheckboxList
                   title="Grocery List"
-                  items={(
-                    generatedRecipes?.improvedRecipe.ingredients ||
-                    improvedRecipe.ingredients
-                  ).map(formatIngredient)}
+                  items={(generatedRecipe || placeholderRecipe).ingredients.map(
+                    formatIngredient
+                  )}
                 />
                 <CheckboxList
                   title="Preparation Steps"
-                  items={
-                    generatedRecipes?.improvedRecipe.instructions ||
-                    improvedRecipe.instructions
-                  }
+                  items={(generatedRecipe || placeholderRecipe).instructions}
                 />
               </>
             )}
@@ -255,7 +219,7 @@ function CreateRecipe() {
           )}
           <Button
             onClick={saveRecipe}
-            disabled={!generatedRecipes || isSaving || savedRecipeId !== null}
+            disabled={!generatedRecipe || isSaving || savedRecipeId !== null}
           >
             {isSaving ? "Saving..." : savedRecipeId ? "Saved" : "Save recipe"}
           </Button>

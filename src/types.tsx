@@ -28,6 +28,16 @@ export interface RecipePair {
   improvedRecipe: Omit<Recipe, "id">;
 }
 
+export interface GeneratedRecipe extends Omit<Recipe, "id"> {
+  classicRecipeNutritionalValues: {
+    calories: number;
+    protein: number;
+    carbohydrates: number;
+    fat: number;
+    fiber: number;
+  };
+}
+
 export type HungerLevel =
   | "starving"
   | "hungry"

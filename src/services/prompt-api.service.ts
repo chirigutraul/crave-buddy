@@ -13,106 +13,70 @@ export class PromptApiService implements PromptApiServiceInterface {
   private readonly recipeSchema = {
     type: "object",
     properties: {
-      classicRecipe: {
-        type: "object",
-        properties: {
-          name: { type: "string" },
-          category: {
-            type: "array",
-            items: {
-              type: "string",
-              enum: ["breakfast", "lunch", "snack", "dinner"],
-            },
-          },
-          portionSize: { type: "number" },
-          ingredients: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                quantity: { type: "number" },
-                unit: { type: "string" },
-                name: { type: "string" },
-              },
-              required: ["quantity", "unit", "name"],
-            },
-          },
-          instructions: {
-            type: "array",
-            items: { type: "string" },
-          },
-          nutritionalValuesPer100g: {
-            type: "object",
-            properties: {
-              calories: { type: "number" },
-              protein: { type: "number" },
-              carbohydrates: { type: "number" },
-              fat: { type: "number" },
-              fiber: { type: "number" },
-            },
-            required: ["calories", "protein", "carbohydrates", "fat", "fiber"],
-          },
+      name: { type: "string" },
+      category: {
+        type: "array",
+        items: {
+          type: "string",
+          enum: ["breakfast", "lunch", "snack", "dinner"],
         },
-        required: [
-          "name",
-          "category",
-          "portionSize",
-          "ingredients",
-          "instructions",
-          "nutritionalValuesPer100g",
-        ],
       },
-      improvedRecipe: {
+      portionSize: { type: "number" },
+      ingredients: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            quantity: { type: "number" },
+            unit: { type: "string" },
+            name: { type: "string" },
+          },
+          required: ["quantity", "unit", "name"],
+        },
+      },
+      instructions: {
+        type: "array",
+        items: { type: "string" },
+      },
+      nutritionalValuesPer100g: {
         type: "object",
         properties: {
-          name: { type: "string" },
-          category: {
-            type: "array",
-            items: {
-              type: "string",
-              enum: ["breakfast", "lunch", "snack", "dinner"],
-            },
-          },
-          portionSize: { type: "number" },
-          ingredients: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                quantity: { type: "number" },
-                unit: { type: "string" },
-                name: { type: "string" },
-              },
-              required: ["quantity", "unit", "name"],
-            },
-          },
-          instructions: {
-            type: "array",
-            items: { type: "string" },
-          },
-          nutritionalValuesPer100g: {
-            type: "object",
-            properties: {
-              calories: { type: "number" },
-              protein: { type: "number" },
-              carbohydrates: { type: "number" },
-              fat: { type: "number" },
-              fiber: { type: "number" },
-            },
-            required: ["calories", "protein", "carbohydrates", "fat", "fiber"],
-          },
+          calories: { type: "number" },
+          protein: { type: "number" },
+          carbohydrates: { type: "number" },
+          fat: { type: "number" },
+          fiber: { type: "number" },
         },
-        required: [
-          "name",
-          "category",
-          "portionSize",
-          "ingredients",
-          "instructions",
-          "nutritionalValuesPer100g",
-        ],
+        required: ["calories", "protein", "carbohydrates", "fat", "fiber"],
       },
     },
-    required: ["classicRecipe", "improvedRecipe"],
+    required: [
+      "name",
+      "category",
+      "portionSize",
+      "ingredients",
+      "instructions",
+      "nutritionalValuesPer100g",
+    ],
+  };
+
+  private readonly nutritionalValuesSchema = {
+    type: "object",
+    properties: {
+      portionSize: { type: "number" },
+      nutritionalValuesPer100g: {
+        type: "object",
+        properties: {
+          calories: { type: "number" },
+          protein: { type: "number" },
+          carbohydrates: { type: "number" },
+          fat: { type: "number" },
+          fiber: { type: "number" },
+        },
+        required: ["calories", "protein", "carbohydrates", "fat", "fiber"],
+      },
+    },
+    required: ["portionSize", "nutritionalValuesPer100g"],
   };
 
   constructor() {
@@ -156,35 +120,87 @@ export class PromptApiService implements PromptApiServiceInterface {
     }
   }
 
-  async getRecipe(cravings: string, signal?: AbortSignal): Promise<string> {
+  async getClassicRecipeNutrition(
+    cravings: string,
+    signal?: AbortSignal
+  ): Promise<string> {
     const clonedSession = await this.session.clone({ signal });
 
     try {
       const prompt = `I am craving: ${cravings}
 
-Based on these cravings, provide TWO recipes:
-1. A classic recipe that satisfies the craving
-2. A healthier improved version with ingredient substitutions, lower in kcalories
+Provide the nutritional values per 100g for a CLASSIC version of this recipe (traditional, not healthy).
 
 Requirements:
-- Categorize recipes into: breakfast, lunch, snack, dinner (can be multiple categories)
-- Use DECIMAL numbers for quantities (0.5, 0.25, 0.75), NOT fractions
-- Provide portionSize as the total weight in grams for ONE serving
+- Provide portionSize as the typical weight in grams for ONE serving of the classic version
 - Provide nutritionalValuesPer100g (not per portion)
-- Ensure ingredients match the portion size`;
+- Use typical classic ingredients (not healthy substitutions)`;
 
-      console.log("Sending recipe prompt to API with structured output...");
+      console.log("Fetching classic recipe nutritional values...");
       const response = await clonedSession.prompt(prompt, {
-        responseConstraint: this.recipeSchema,
+        responseConstraint: this.nutritionalValuesSchema,
         omitResponseConstraintInput: true,
         signal,
       });
-      console.log("Received structured recipe response");
+      console.log("Received classic nutritional values");
 
       return response; // Already valid JSON!
     } finally {
       await clonedSession.destroy();
     }
+  }
+
+  async getImprovedRecipe(
+    cravings: string,
+    signal?: AbortSignal
+  ): Promise<string> {
+    const clonedSession = await this.session.clone({ signal });
+
+    try {
+      const prompt = `I am craving: ${cravings}
+
+Provide ONE improved healthy recipe with ingredient substitutions (lower in kcalories).
+
+Requirements:
+- Categorize the recipe into: breakfast, lunch, snack, dinner (can be multiple categories)
+- Use DECIMAL numbers for quantities (0.5, 0.25, 0.75), NOT fractions
+- Provide portionSize as the total weight in grams for ONE serving
+- Provide nutritionalValuesPer100g (not per portion)
+- Ensure ingredients match the portion size`;
+
+      console.log("Generating improved recipe...");
+      const response = await clonedSession.prompt(prompt, {
+        responseConstraint: this.recipeSchema,
+        omitResponseConstraintInput: true,
+        signal,
+      });
+      console.log("Received improved recipe");
+
+      return response; // Already valid JSON!
+    } finally {
+      await clonedSession.destroy();
+    }
+  }
+
+  async getRecipe(cravings: string, signal?: AbortSignal): Promise<string> {
+    // Run both prompts in parallel for faster generation
+    const [classicNutritionResponse, improvedRecipeResponse] =
+      await Promise.all([
+        this.getClassicRecipeNutrition(cravings, signal),
+        this.getImprovedRecipe(cravings, signal),
+      ]);
+
+    // Parse responses
+    const classicNutrition = JSON.parse(classicNutritionResponse);
+    const improvedRecipe = JSON.parse(improvedRecipeResponse);
+
+    // Combine into GeneratedRecipe structure
+    const combinedRecipe = {
+      ...improvedRecipe,
+      classicRecipeNutritionalValues: classicNutrition.nutritionalValuesPer100g,
+    };
+
+    return JSON.stringify(combinedRecipe);
   }
 
   async generateWeeklyPlan(
@@ -536,7 +552,7 @@ Provide ONLY the advice text, no introductions or explanations.`;
     }
   }
 
-  async getRecipeFromLeftovers(
+  async getClassicLeftoverNutrition(
     leftoverIngredients: string,
     signal?: AbortSignal
   ): Promise<string> {
@@ -545,32 +561,81 @@ Provide ONLY the advice text, no introductions or explanations.`;
     try {
       const prompt = `I have the following leftover ingredients: ${leftoverIngredients}
 
-Based on these leftover ingredients, provide TWO recipes:
-1. A classic recipe that uses as many of these ingredients as possible
-2. A healthier improved version with additional healthy ingredient suggestions, lower in kcalories
+Provide the nutritional values per 100g for a CLASSIC recipe using these ingredients (traditional cooking method, not healthy).
+
+Requirements:
+- Provide portionSize as the typical weight in grams for ONE serving
+- Provide nutritionalValuesPer100g (not per portion)`;
+
+      console.log("Fetching classic leftover recipe nutritional values...");
+      const response = await clonedSession.prompt(prompt, {
+        responseConstraint: this.nutritionalValuesSchema,
+        omitResponseConstraintInput: true,
+        signal,
+      });
+      console.log("Received classic leftover nutritional values");
+
+      return response;
+    } finally {
+      await clonedSession.destroy();
+    }
+  }
+
+  async getImprovedLeftoverRecipe(
+    leftoverIngredients: string,
+    signal?: AbortSignal
+  ): Promise<string> {
+    const clonedSession = await this.session.clone({ signal });
+
+    try {
+      const prompt = `I have the following leftover ingredients: ${leftoverIngredients}
+
+Provide ONE improved healthy recipe that uses as many of these ingredients as possible, with additional healthy ingredient suggestions (lower in kcalories).
 
 Requirements:
 - Try to use as many of the provided leftover ingredients as possible
 - You can suggest additional ingredients to complete the recipe, but prioritize using the leftovers
-- Categorize recipes into: breakfast, lunch, snack, dinner (can be multiple categories)
+- Categorize the recipe into: breakfast, lunch, snack, dinner (can be multiple categories)
 - Use DECIMAL numbers for quantities (0.5, 0.25, 0.75), NOT fractions
 - Provide portionSize as the total weight in grams for ONE serving
 - Provide nutritionalValuesPer100g (not per portion)
 - Ensure ingredients match the portion size`;
 
-      console.log(
-        "Sending leftover ingredients prompt to API with structured output..."
-      );
+      console.log("Generating improved leftover recipe...");
       const response = await clonedSession.prompt(prompt, {
         responseConstraint: this.recipeSchema,
         omitResponseConstraintInput: true,
         signal,
       });
-      console.log("Received structured leftover recipe response");
+      console.log("Received improved leftover recipe");
 
-      return response; // Already valid JSON!
+      return response;
     } finally {
       await clonedSession.destroy();
     }
+  }
+
+  async getRecipeFromLeftovers(
+    leftoverIngredients: string,
+    signal?: AbortSignal
+  ): Promise<string> {
+    // Run both prompts in parallel for faster generation
+    const [classicNutritionResponse, improvedRecipeResponse] =
+      await Promise.all([
+        this.getClassicLeftoverNutrition(leftoverIngredients, signal),
+        this.getImprovedLeftoverRecipe(leftoverIngredients, signal),
+      ]);
+
+    // Parse responses
+    const classicNutrition = JSON.parse(classicNutritionResponse);
+    const improvedRecipe = JSON.parse(improvedRecipeResponse);
+
+    // Combine into GeneratedRecipe structure
+    const combinedRecipe = {
+      ...improvedRecipe,
+      classicRecipeNutritionalValues: classicNutrition.nutritionalValuesPer100g,
+    };
+
+    return JSON.stringify(combinedRecipe);
   }
 }

@@ -3,14 +3,14 @@ import { Textarea } from "@/components/ui/textarea";
 import RecipeComparison, {
   RecipeComparisonSkeleton,
 } from "@/components/RecipeComparison";
-import type { Recipe, RecipePair } from "@/types";
+import type { Recipe, GeneratedRecipe } from "@/types";
 import { CheckboxList, CheckboxListSkeleton } from "@/components/CheckboxList";
 import { Button } from "@/components/ui/button";
 import { PromptApiService } from "@/services/prompt-api.service";
 import { recipeService } from "@/services/recipe.service";
 import { ImageService } from "@/services/image.service";
 import { useEffect, useState, useRef } from "react";
-import { parseRecipeResponse } from "@/lib/utils";
+import { parseGeneratedRecipe } from "@/lib/utils";
 import { formatIngredient } from "@/lib/recipe-utils";
 import placeHolderImage from "@/assets/placeholder-image.jpg";
 
@@ -19,42 +19,13 @@ function CreateLeftoverMeal() {
   const [leftoverIngredients, setLeftoverIngredients] = useState("");
   const [isReady, setIsReady] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedRecipes, setGeneratedRecipes] = useState<RecipePair | null>(
-    null
-  );
+  const [generatedRecipe, setGeneratedRecipe] =
+    useState<GeneratedRecipe | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [savedRecipeId, setSavedRecipeId] = useState<number | null>(null);
 
-  const classicRecipe: Recipe = {
-    id: 1,
-    image: placeHolderImage,
-    name: "Classic Leftover Stir-Fry",
-    category: ["lunch", "dinner"],
-    portionSize: 350,
-    ingredients: [
-      { quantity: 150, unit: "g", name: "mixed vegetables" },
-      { quantity: 100, unit: "g", name: "cooked rice" },
-      { quantity: 50, unit: "g", name: "protein of choice" },
-      { quantity: 2, unit: "tbsp", name: "soy sauce" },
-    ],
-    instructions: [
-      "Heat a wok or large pan over high heat.",
-      "Add vegetables and stir-fry for 3-4 minutes.",
-      "Add protein and rice, stir well.",
-      "Add soy sauce and cook for another 2 minutes.",
-      "Serve hot.",
-    ],
-    nutritionalValuesPer100g: {
-      calories: 130,
-      protein: 6,
-      fat: 4,
-      carbohydrates: 18,
-      fiber: 2,
-    },
-  };
-
-  const improvedRecipe: Recipe = {
-    id: 2,
+  // Mock/placeholder recipe for initial display (prevents layout jumps)
+  const placeholderRecipe: GeneratedRecipe = {
     image: placeHolderImage,
     name: "Healthy Leftover Bowl",
     category: ["lunch", "dinner"],
@@ -80,6 +51,13 @@ function CreateLeftoverMeal() {
       carbohydrates: 15,
       fiber: 3,
     },
+    classicRecipeNutritionalValues: {
+      calories: 130,
+      protein: 6,
+      fat: 4,
+      carbohydrates: 18,
+      fiber: 2,
+    },
   };
 
   const generateMealFromLeftovers = async () => {
@@ -88,31 +66,29 @@ function CreateLeftoverMeal() {
     try {
       setIsGenerating(true);
       setSavedRecipeId(null);
-      const response = await promptApiServiceRef.current.getRecipeFromLeftovers(
-        leftoverIngredients
+      console.time("⏱️ Total leftover meal generation time");
+
+      // Run recipe generation and image generation in parallel using leftover ingredients
+      const [response, finalImageUrl] = await Promise.all([
+        promptApiServiceRef.current.getRecipeFromLeftovers(leftoverIngredients),
+        ImageService.getRecipeImage(leftoverIngredients),
+      ]);
+
+      console.timeEnd("⏱️ Total leftover meal generation time");
+      console.log("✅ AI Response (raw):", response);
+
+      const recipe = parseGeneratedRecipe(response);
+      console.log("Parsed recipe:", recipe);
+      console.log(
+        "Classic Recipe Nutritional Values:",
+        recipe.classicRecipeNutritionalValues
       );
-      console.log("AI Response (raw):", response);
+      console.log("Improved Recipe:", recipe);
 
-      const recipes = parseRecipeResponse(response);
-      console.log("Parsed recipes:", recipes);
-      console.log("Classic Recipe:", recipes.classicRecipe);
-      console.log("Improved Recipe:", recipes.improvedRecipe);
+      // Add image URL to recipe
+      recipe.image = finalImageUrl;
 
-      // Fetch image from Pexels for the improved recipe
-      console.log("Fetching image for:", recipes.improvedRecipe.name);
-      const imageUrl = await ImageService.searchRecipeImage(
-        recipes.improvedRecipe.name
-      );
-
-      // Use fetched image or fallback to placeholder
-      const finalImageUrl = imageUrl || ImageService.getFallbackImage();
-      console.log("Using image URL:", finalImageUrl);
-
-      // Add image URL to both recipes
-      recipes.improvedRecipe.image = finalImageUrl;
-      recipes.classicRecipe.image = finalImageUrl;
-
-      setGeneratedRecipes(recipes);
+      setGeneratedRecipe(recipe);
     } catch (error) {
       console.error("Error generating meal from leftovers:", error);
     } finally {
@@ -121,21 +97,18 @@ function CreateLeftoverMeal() {
   };
 
   const saveRecipe = async () => {
-    if (!generatedRecipes) return;
+    if (!generatedRecipe) return;
 
     try {
       setIsSaving(true);
       const recipeToSave: Omit<Recipe, "id"> = {
-        name: generatedRecipes.improvedRecipe.name,
-        image:
-          generatedRecipes.improvedRecipe.image ||
-          ImageService.getFallbackImage(),
-        category: generatedRecipes.improvedRecipe.category,
-        portionSize: generatedRecipes.improvedRecipe.portionSize,
-        ingredients: generatedRecipes.improvedRecipe.ingredients,
-        instructions: generatedRecipes.improvedRecipe.instructions,
-        nutritionalValuesPer100g:
-          generatedRecipes.improvedRecipe.nutritionalValuesPer100g,
+        name: generatedRecipe.name,
+        image: generatedRecipe.image || ImageService.getFallbackImage(),
+        category: generatedRecipe.category,
+        portionSize: generatedRecipe.portionSize,
+        ingredients: generatedRecipe.ingredients,
+        instructions: generatedRecipe.instructions,
+        nutritionalValuesPer100g: generatedRecipe.nutritionalValuesPer100g,
       };
 
       const recipeId = await recipeService.createRecipe(recipeToSave);
@@ -196,29 +169,22 @@ function CreateLeftoverMeal() {
             {isGenerating ? (
               <RecipeComparisonSkeleton />
             ) : (
-              <RecipeComparison
-                classicRecipe={generatedRecipes?.classicRecipe || classicRecipe}
-                improvedRecipe={
-                  generatedRecipes?.improvedRecipe || improvedRecipe
-                }
-              />
+              <RecipeComparison recipe={generatedRecipe || placeholderRecipe} />
             )}
-            {generatedRecipes && (
-              <p className="font-medium">
-                Results of smart swap: you reduced the calories by{" "}
-                {Math.round(
-                  (generatedRecipes.classicRecipe.nutritionalValuesPer100g
-                    .calories *
-                    generatedRecipes.classicRecipe.portionSize) /
-                    100 -
-                    (generatedRecipes.improvedRecipe.nutritionalValuesPer100g
-                      .calories *
-                      generatedRecipes.improvedRecipe.portionSize) /
-                      100
-                )}
-                kcal per portion and lowered the fats
-              </p>
-            )}
+            <p className="font-medium">
+              Results of smart swap: you reduced the calories by{" "}
+              {Math.round(
+                ((generatedRecipe || placeholderRecipe)
+                  .classicRecipeNutritionalValues.calories *
+                  (generatedRecipe || placeholderRecipe).portionSize) /
+                  100 -
+                  ((generatedRecipe || placeholderRecipe)
+                    .nutritionalValuesPer100g.calories *
+                    (generatedRecipe || placeholderRecipe).portionSize) /
+                    100
+              )}
+              kcal per portion and lowered the fats
+            </p>
           </div>
           <div className="flex flex-col gap-8">
             {isGenerating ? (
@@ -230,17 +196,13 @@ function CreateLeftoverMeal() {
               <>
                 <CheckboxList
                   title="Grocery List"
-                  items={(
-                    generatedRecipes?.improvedRecipe.ingredients ||
-                    improvedRecipe.ingredients
-                  ).map(formatIngredient)}
+                  items={(generatedRecipe || placeholderRecipe).ingredients.map(
+                    formatIngredient
+                  )}
                 />
                 <CheckboxList
                   title="Preparation Steps"
-                  items={
-                    generatedRecipes?.improvedRecipe.instructions ||
-                    improvedRecipe.instructions
-                  }
+                  items={(generatedRecipe || placeholderRecipe).instructions}
                 />
               </>
             )}
@@ -254,7 +216,7 @@ function CreateLeftoverMeal() {
           )}
           <Button
             onClick={saveRecipe}
-            disabled={!generatedRecipes || isSaving || savedRecipeId !== null}
+            disabled={!generatedRecipe || isSaving || savedRecipeId !== null}
           >
             {isSaving ? "Saving..." : savedRecipeId ? "Saved" : "Save recipe"}
           </Button>

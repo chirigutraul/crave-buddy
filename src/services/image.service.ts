@@ -32,15 +32,11 @@ export class ImageService {
    * 3. Fall back to placeholder image
    *
    * @param recipeName - Name of the recipe
-   * @param ingredients - Optional list of ingredients for better AI prompts
    * @returns Image URL (always returns a valid URL)
    */
-  static async getRecipeImage(
-    recipeName: string,
-    ingredients?: string[]
-  ): Promise<string> {
+  static async getRecipeImage(recipeName: string): Promise<string> {
     // Try AI generation first
-    const aiImageUrl = await this.generateRecipeImage(recipeName, ingredients);
+    const aiImageUrl = await this.generateRecipeImage(recipeName);
     if (aiImageUrl) {
       console.log("Using AI-generated image:", aiImageUrl);
       return aiImageUrl;
@@ -62,13 +58,9 @@ export class ImageService {
   /**
    * Generate an image for a recipe using AI image generation API
    * @param recipeName - Name of the recipe to generate image for
-   * @param ingredients - Optional list of ingredients for better prompts
    * @returns Image URL from cloud storage or null if generation fails
    */
-  static async generateRecipeImage(
-    recipeName: string,
-    ingredients?: string[]
-  ): Promise<string | null> {
+  static async generateRecipeImage(recipeName: string): Promise<string | null> {
     if (!IMAGE_GEN_API) {
       console.warn(
         "Image generation API URL is not configured. Skipping AI image generation."
@@ -79,18 +71,13 @@ export class ImageService {
     try {
       console.log("Generating AI image for:", recipeName);
 
-      // Generate a better prompt if ingredients are provided
-      const prompt = ingredients
-        ? this.generatePromptFromRecipe(recipeName, ingredients)
-        : recipeName;
-
       const response = await fetch(IMAGE_GEN_API, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          prompt: prompt,
+          prompt: recipeName,
         }),
       });
 
@@ -216,24 +203,5 @@ export class ImageService {
       reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
-  }
-
-  /**
-   * Generate a descriptive prompt from recipe details
-   * @param recipeName - Name of the recipe
-   * @param ingredients - List of ingredients
-   * @returns Formatted description for image generation
-   */
-  private static generatePromptFromRecipe(
-    recipeName: string,
-    ingredients: string[]
-  ): string {
-    if (!ingredients || ingredients.length === 0) {
-      return recipeName;
-    }
-
-    // Take first 3-5 key ingredients to add context
-    const keyIngredients = ingredients.slice(0, 5).join(", ");
-    return `${recipeName} made with ${keyIngredients}`;
   }
 }
