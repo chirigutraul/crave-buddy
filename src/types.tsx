@@ -100,11 +100,30 @@ export interface User {
 }
 
 declare global {
+  interface AILanguageModelPromptOptions {
+    signal?: AbortSignal;
+    responseConstraint?: any; // JSON Schema or RegExp
+    omitResponseConstraintInput?: boolean;
+  }
+
+  interface AILanguageModelCloneOptions {
+    signal?: AbortSignal;
+  }
+
   interface AILanguageModel {
-    prompt(input: string): Promise<string>;
-    promptStreaming(input: string): ReadableStream;
+    prompt(
+      input: string,
+      options?: AILanguageModelPromptOptions
+    ): Promise<string>;
+    promptStreaming(
+      input: string,
+      options?: AILanguageModelPromptOptions
+    ): ReadableStream;
     countPromptTokens(input: string): Promise<number>;
-    destroy(): void;
+    clone(options?: AILanguageModelCloneOptions): Promise<AILanguageModel>;
+    destroy(): Promise<void>;
+    inputUsage: number;
+    inputQuota: number;
   }
 
   interface Window {
@@ -118,6 +137,12 @@ declare global {
         temperature?: number;
         topK?: number;
       }): Promise<AILanguageModel>;
+      params(): Promise<{
+        defaultTemperature: number;
+        maxTemperature: number;
+        defaultTopK: number;
+        maxTopK: number;
+      }>;
     };
   }
 }
