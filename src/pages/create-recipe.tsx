@@ -100,17 +100,16 @@ function CreateRecipe() {
       console.log("Classic Recipe:", recipes.classicRecipe);
       console.log("Improved Recipe:", recipes.improvedRecipe);
 
-      // Fetch image from Pexels for the improved recipe
-      console.log("Fetching image for:", recipes.improvedRecipe.name);
-      const imageUrl = await ImageService.searchRecipeImage(
-        recipes.improvedRecipe.name
+      // Get recipe image with automatic fallback (AI → Pexels → placeholder)
+      const ingredientNames = recipes.improvedRecipe.ingredients.map(
+        (ing) => ing.name
+      );
+      const finalImageUrl = await ImageService.getRecipeImage(
+        recipes.improvedRecipe.name,
+        ingredientNames
       );
 
-      // Use fetched image or fallback to placeholder
-      const finalImageUrl = imageUrl || ImageService.getFallbackImage();
-      console.log("Using image URL:", finalImageUrl);
-
-      // Add image URL to both recipes
+      // Add image to both recipes
       recipes.improvedRecipe.image = finalImageUrl;
       recipes.classicRecipe.image = finalImageUrl;
 
