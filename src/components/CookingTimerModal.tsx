@@ -6,6 +6,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { ChevronLeft, ChevronRight, Play, Pause } from "lucide-react";
 import type { PreparationStep } from "@/types";
 
@@ -25,7 +27,9 @@ export function CookingTimerModal({
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(steps[0]?.time || 0);
   const [isRunning, setIsRunning] = useState(false);
+  const [autoAdvance, setAutoAdvance] = useState(false);
   const intervalRef = useRef<number | null>(null);
+  const autoAdvancedRef = useRef(false);
 
   const currentStep = steps[currentStepIndex];
   const isFirstStep = currentStepIndex === 0;
@@ -35,7 +39,15 @@ export function CookingTimerModal({
   useEffect(() => {
     if (currentStep) {
       setTimeRemaining(currentStep.time);
-      setIsRunning(false);
+
+      // If we auto-advanced, start the timer automatically
+      if (autoAdvancedRef.current) {
+        setIsRunning(true);
+        autoAdvancedRef.current = false;
+      } else {
+        setIsRunning(false);
+      }
+
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
@@ -68,6 +80,18 @@ export function CookingTimerModal({
       }
     };
   }, [isRunning, timeRemaining]);
+
+  // Auto-advance to next step when timer finishes
+  useEffect(() => {
+    if (autoAdvance && timeRemaining === 0 && !isRunning && !isLastStep) {
+      // Small delay before advancing to next step
+      const timeout = setTimeout(() => {
+        autoAdvancedRef.current = true;
+        setCurrentStepIndex(currentStepIndex + 1);
+      }, 500);
+      return () => clearTimeout(timeout);
+    }
+  }, [autoAdvance, timeRemaining, isRunning, isLastStep, currentStepIndex]);
 
   // Clean up on unmount
   useEffect(() => {
@@ -117,14 +141,28 @@ export function CookingTimerModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-neutral-800">
-            {recipeName}
+          <DialogTitle className=" text-neutral-800">
+            <h4>{recipeName}</h4>
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          {/* Step counter */}
-          <div className="text-center">
+          {/* Step counter and auto-advance toggle */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Switch
+                id="auto-advance"
+                checked={autoAdvance}
+                onCheckedChange={setAutoAdvance}
+                className="cursor-pointer"
+              />
+              <Label
+                htmlFor="auto-advance"
+                className="text-sm font-medium text-neutral-700 cursor-pointer"
+              >
+                Auto-advance
+              </Label>
+            </div>
             <p className="text-sm text-neutral-500 font-medium">
               Step {currentStepIndex + 1} of {steps.length}
             </p>
