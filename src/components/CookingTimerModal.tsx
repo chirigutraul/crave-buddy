@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { ChevronLeft, ChevronRight, Play, Pause } from "lucide-react";
 import type { PreparationStep } from "@/types";
+import stepDoneSound from "@/assets/step-done.mp3";
 
 interface CookingTimerModalProps {
   open: boolean;
@@ -30,6 +31,18 @@ export function CookingTimerModal({
   const [autoAdvance, setAutoAdvance] = useState(false);
   const intervalRef = useRef<number | null>(null);
   const autoAdvancedRef = useRef(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Initialize audio
+  useEffect(() => {
+    audioRef.current = new Audio(stepDoneSound);
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
 
   const currentStep = steps[currentStepIndex];
   const isFirstStep = currentStepIndex === 0;
@@ -62,6 +75,13 @@ export function CookingTimerModal({
         setTimeRemaining((prev) => {
           if (prev <= 1) {
             setIsRunning(false);
+            // Play sound when timer finishes
+            if (audioRef.current) {
+              audioRef.current.currentTime = 0;
+              audioRef.current.play().catch((error) => {
+                console.log("Audio play failed:", error);
+              });
+            }
             return 0;
           }
           return prev - 1;
