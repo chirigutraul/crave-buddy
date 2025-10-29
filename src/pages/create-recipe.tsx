@@ -12,6 +12,7 @@ import { ImageService } from "@/services/image.service";
 import { useEffect, useState, useRef } from "react";
 import { formatIngredient } from "@/lib/recipe-utils";
 import placeHolderImage from "@/assets/placeholder-image.jpg";
+import { showError } from "@/lib/toast";
 
 function CreateRecipe() {
   const promptApiServiceRef = useRef<PromptApiService | null>(null);
@@ -186,7 +187,7 @@ function CreateRecipe() {
       console.log("Recipe saved successfully with ID:", recipeId);
     } catch (error) {
       console.error("Error saving recipe:", error);
-      alert("Failed to save recipe. Please try again.");
+      showError("Failed to save recipe. Please try again.");
     } finally {
       setIsSaving(false);
     }

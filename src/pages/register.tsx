@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/field";
 import BackgroundImage from "@/assets/background-image.jpeg";
 import type { ActivityLevel } from "@/types";
+import { showError } from "@/lib/toast";
 
 interface FormData {
   name: string;
@@ -108,7 +109,7 @@ function Register() {
       navigate("/profile");
     } catch (error) {
       console.error("Error creating user:", error);
-      alert("Failed to create user. Please try again.");
+      showError("Failed to create user. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

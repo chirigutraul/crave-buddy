@@ -27,6 +27,7 @@ import {
   calculateDailyCalories,
   getCurrentWeight,
 } from "@/lib/utils";
+import { showError, showInfo, showSuccess } from "@/lib/toast";
 
 function ViewWeeklyPlan() {
   const { id } = useParams<{ id: string }>();
@@ -72,7 +73,7 @@ function ViewWeeklyPlan() {
   useEffect(() => {
     const loadPlan = async () => {
       if (!id) {
-        alert("Invalid weekly plan ID");
+        showError("Invalid weekly plan ID");
         navigate("/my-week");
         return;
       }
@@ -82,7 +83,7 @@ function ViewWeeklyPlan() {
         const plan = await weeklyPlanService.getWeeklyPlanById(Number(id));
 
         if (!plan) {
-          alert("Weekly plan not found");
+          showError("Weekly plan not found");
           navigate("/my-week");
           return;
         }
@@ -91,7 +92,7 @@ function ViewWeeklyPlan() {
         loadWeekMeals(plan.meals);
       } catch (error) {
         console.error("Error loading weekly plan:", error);
-        alert("Failed to load weekly plan");
+        showError("Failed to load weekly plan");
         navigate("/my-week");
       } finally {
         setIsLoading(false);
@@ -158,12 +159,12 @@ function ViewWeeklyPlan() {
 
   const handleUpdateWeek = async () => {
     if (!weekName.trim()) {
-      alert("Please enter a name for your weekly plan");
+      showInfo("Please enter a name for your weekly plan");
       return;
     }
 
     if (!id) {
-      alert("Invalid weekly plan ID");
+      showError("Invalid weekly plan ID");
       return;
     }
 
@@ -211,10 +212,10 @@ function ViewWeeklyPlan() {
       });
       console.log("==============================\n");
 
-      alert(`Weekly plan "${weekName}" updated successfully!`);
+      showSuccess(`Weekly plan "${weekName}" updated successfully!`);
     } catch (error) {
       console.error("Error updating weekly plan:", error);
-      alert("Failed to update weekly plan. Please try again.");
+      showError("Failed to update weekly plan. Please try again.");
     } finally {
       setIsSaving(false);
     }

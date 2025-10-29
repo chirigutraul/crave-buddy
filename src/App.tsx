@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Home from "./pages/home";
 import CreateRecipe from "./pages/create-recipe";
 import MyWeek from "./pages/my-week";
@@ -30,6 +32,7 @@ function App() {
           </Routes>
         </WeekMealProvider>
       </UserProvider>
+      <ToastContainer />
     </BrowserRouter>
   );
 }

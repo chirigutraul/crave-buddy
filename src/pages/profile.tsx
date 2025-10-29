@@ -12,6 +12,7 @@ import {
 } from "@/lib/utils";
 import { PromptApiService } from "@/services/prompt-api.service";
 import { Sparkles } from "lucide-react";
+import { showError } from "@/lib/toast";
 
 function Profile() {
   const { user, updateUser } = useUser();
@@ -25,7 +26,7 @@ function Profile() {
 
     const weightValue = parseFloat(newWeight);
     if (isNaN(weightValue) || weightValue < 20 || weightValue > 500) {
-      alert("Please enter a valid weight between 20 and 500 kg");
+      showError("Please enter a valid weight between 20 and 500 kg");
       return;
     }
 
@@ -45,7 +46,7 @@ function Profile() {
       setNewWeight("");
     } catch (error) {
       console.error("Error adding weight:", error);
-      alert("Failed to add weight. Please try again.");
+      showError("Failed to add weight. Please try again.");
     } finally {
       setIsAdding(false);
     }

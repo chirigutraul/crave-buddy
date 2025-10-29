@@ -15,6 +15,7 @@ import {
   calculateDailyCalories,
   getCurrentWeight,
 } from "@/lib/utils";
+import { showError, showInfo, showSuccess } from "@/lib/toast";
 
 function MyWeek() {
   const {
@@ -133,12 +134,12 @@ function MyWeek() {
 
   const handleGenerateWithAI = async () => {
     if (!promptApiServiceRef.current || !isReady) {
-      alert("AI service is not ready yet. Please wait...");
+      showInfo("AI service is not ready yet. Please wait...");
       return;
     }
 
     if (recipes.length === 0) {
-      alert("No recipes available. Please create some recipes first.");
+      showInfo("No recipes available. Please create some recipes first.");
       return;
     }
 
@@ -210,10 +211,10 @@ function MyWeek() {
       });
       console.log("================================\n");
 
-      alert("Weekly plan generated successfully!");
+      showSuccess("Weekly plan generated successfully!");
     } catch (error) {
       console.error("Error generating weekly plan:", error);
-      alert("Failed to generate weekly plan. Please try again.");
+      showError("Failed to generate weekly plan. Please try again.");
     } finally {
       setIsGenerating(false);
     }
@@ -221,7 +222,7 @@ function MyWeek() {
 
   const handleSaveWeek = async () => {
     if (!weekName.trim()) {
-      alert("Please enter a name for your weekly plan");
+      showInfo("Please enter a name for your weekly plan");
       return;
     }
 
@@ -272,10 +273,10 @@ function MyWeek() {
       });
       console.log("============================\n");
 
-      alert(`Weekly plan "${weekName}" saved successfully!`);
+      showSuccess(`Weekly plan "${weekName}" saved successfully!`);
     } catch (error) {
       console.error("Error saving weekly plan:", error);
-      alert("Failed to save weekly plan. Please try again.");
+      showError("Failed to save weekly plan. Please try again.");
     } finally {
       setIsSaving(false);
     }
