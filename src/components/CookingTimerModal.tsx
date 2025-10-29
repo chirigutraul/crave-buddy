@@ -8,9 +8,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { ChevronLeft, ChevronRight, Play, Pause } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, Pause, Volume2 } from "lucide-react";
 import type { PreparationStep } from "@/types";
 import stepDoneSound from "@/assets/step-done.mp3";
+import { ttsService } from "@/services/tts.service";
 
 interface CookingTimerModalProps {
   open: boolean;
@@ -29,6 +30,8 @@ export function CookingTimerModal({
   const [timeRemaining, setTimeRemaining] = useState(steps[0]?.time || 0);
   const [isRunning, setIsRunning] = useState(false);
   const [autoAdvance, setAutoAdvance] = useState(false);
+  const [autoReadOutLoud, setAutoReadOutLoud] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const intervalRef = useRef<number | null>(null);
   const autoAdvancedRef = useRef(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -113,6 +116,27 @@ export function CookingTimerModal({
     }
   }, [autoAdvance, timeRemaining, isRunning, isLastStep, currentStepIndex]);
 
+  // Auto-read step out loud when step changes (if enabled)
+  useEffect(() => {
+    // Only auto-read if:
+    // 1. Auto-advance and auto-read are enabled
+    // 2. Modal is open
+    // 3. Timer is running
+    const shouldAutoRead = autoAdvance && autoReadOutLoud && open && isRunning;
+
+    if (shouldAutoRead) {
+      // Small delay to let the UI update before speaking
+      const timeout = setTimeout(() => {
+        handleSpeak();
+      }, 300);
+      return () => {
+        clearTimeout(timeout);
+        // Stop speaking when changing steps
+        ttsService.stop();
+      };
+    }
+  }, [currentStepIndex, autoAdvance, autoReadOutLoud, open, isRunning]);
+
   // Clean up on unmount
   useEffect(() => {
     return () => {
@@ -142,6 +166,19 @@ export function CookingTimerModal({
     }
   };
 
+  const handleSpeak = async () => {
+    if (!currentStep || isSpeaking) return;
+
+    setIsSpeaking(true);
+    try {
+      await ttsService.speak(currentStep.instruction);
+    } catch (error) {
+      console.error("Error speaking instruction:", error);
+    } finally {
+      setIsSpeaking(false);
+    }
+  };
+
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -167,21 +204,48 @@ export function CookingTimerModal({
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          {/* Step counter and auto-advance toggle */}
+          {/* Step counter and toggles */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Switch
-                id="auto-advance"
-                checked={autoAdvance}
-                onCheckedChange={setAutoAdvance}
-                className="cursor-pointer"
-              />
-              <Label
-                htmlFor="auto-advance"
-                className="text-sm font-medium text-neutral-700 cursor-pointer"
-              >
-                Auto-advance
-              </Label>
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="auto-advance"
+                  checked={autoAdvance}
+                  onCheckedChange={(checked) => {
+                    setAutoAdvance(checked);
+                    // Turn off auto-read if auto-advance is disabled
+                    if (!checked) {
+                      setAutoReadOutLoud(false);
+                    }
+                  }}
+                  className="cursor-pointer"
+                />
+                <Label
+                  htmlFor="auto-advance"
+                  className="text-sm font-medium text-neutral-700 cursor-pointer"
+                >
+                  Auto-advance
+                </Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="auto-read"
+                  checked={autoReadOutLoud}
+                  onCheckedChange={setAutoReadOutLoud}
+                  disabled={!autoAdvance}
+                  className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                />
+                <Label
+                  htmlFor="auto-read"
+                  className={`text-sm font-medium cursor-pointer ${
+                    !autoAdvance
+                      ? "text-neutral-400 cursor-not-allowed"
+                      : "text-neutral-700"
+                  }`}
+                >
+                  Read step out loud
+                </Label>
+              </div>
             </div>
             <p className="text-sm text-neutral-500 font-medium">
               Step {currentStepIndex + 1} of {steps.length}
@@ -232,8 +296,24 @@ export function CookingTimerModal({
           </div>
 
           {/* Current instruction */}
-          <div className="bg-neutral-50 rounded-lg p-6">
-            <p className="text-lg text-neutral-700 leading-relaxed text-center">
+          <div className="bg-neutral-50 rounded-lg p-6 relative">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSpeak}
+              disabled={isSpeaking}
+              className="absolute top-2 right-2 hover:bg-neutral-200"
+              title="Read instruction aloud"
+            >
+              <Volume2
+                className={`h-5 w-5 ${
+                  isSpeaking
+                    ? "animate-pulse text-[#9ACD32]"
+                    : "text-neutral-600"
+                }`}
+              />
+            </Button>
+            <p className="text-lg text-neutral-700 leading-relaxed text-center pr-10">
               {currentStep.instruction}
             </p>
           </div>
