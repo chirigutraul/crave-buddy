@@ -9,83 +9,6 @@ export class PromptApiService implements PromptApiServiceInterface {
   model: typeof window.LanguageModel;
   session: any;
 
-  // Reusable JSON schemas for structured output
-  private readonly recipeSchema = {
-    type: "object",
-    properties: {
-      name: { type: "string" },
-      category: {
-        type: "array",
-        items: {
-          type: "string",
-          enum: ["breakfast", "lunch", "snack", "dinner"],
-        },
-      },
-      portionSize: { type: "number" },
-      ingredients: {
-        type: "array",
-        items: {
-          type: "object",
-          properties: {
-            quantity: { type: "number" },
-            unit: { type: "string" },
-            name: { type: "string" },
-          },
-          required: ["quantity", "unit", "name"],
-        },
-      },
-      instructions: {
-        type: "array",
-        items: {
-          type: "object",
-          properties: {
-            instruction: { type: "string" },
-            time: { type: "number" },
-          },
-          required: ["instruction", "time"],
-        },
-      },
-      nutritionalValuesPer100g: {
-        type: "object",
-        properties: {
-          calories: { type: "number" },
-          protein: { type: "number" },
-          carbohydrates: { type: "number" },
-          fat: { type: "number" },
-          fiber: { type: "number" },
-        },
-        required: ["calories", "protein", "carbohydrates", "fat", "fiber"],
-      },
-    },
-    required: [
-      "name",
-      "category",
-      "portionSize",
-      "ingredients",
-      "instructions",
-      "nutritionalValuesPer100g",
-    ],
-  };
-
-  private readonly nutritionalValuesSchema = {
-    type: "object",
-    properties: {
-      portionSize: { type: "number" },
-      nutritionalValuesPer100g: {
-        type: "object",
-        properties: {
-          calories: { type: "number" },
-          protein: { type: "number" },
-          carbohydrates: { type: "number" },
-          fat: { type: "number" },
-          fiber: { type: "number" },
-        },
-        required: ["calories", "protein", "carbohydrates", "fat", "fiber"],
-      },
-    },
-    required: ["portionSize", "nutritionalValuesPer100g"],
-  };
-
   constructor() {
     this.model = window.LanguageModel;
     this.session = null;
@@ -138,20 +61,46 @@ export class PromptApiService implements PromptApiServiceInterface {
 
 Provide the nutritional values per 100g for a CLASSIC version of this recipe (traditional, not healthy).
 
+Return ONLY valid JSON (no markdown, no code blocks, no explanation) matching this exact structure:
+{
+  "portionSize": 250,
+  "nutritionalValuesPer100g": {
+    "calories": 150,
+    "protein": 8,
+    "carbohydrates": 20,
+    "fat": 5,
+    "fiber": 3
+  }
+}
+
 Requirements:
 - Provide portionSize as the typical weight in grams for ONE serving of the classic version
 - Provide nutritionalValuesPer100g (not per portion)
 - Use typical classic ingredients (not healthy substitutions)`;
 
       console.log("Fetching classic recipe nutritional values...");
-      const response = await clonedSession.prompt(prompt, {
-        responseConstraint: this.nutritionalValuesSchema,
-        omitResponseConstraintInput: true,
-        signal,
-      });
+      const response = await clonedSession.prompt(prompt, { signal });
       console.log("Received classic nutritional values");
 
-      return response; // Already valid JSON!
+      // Clean up response (remove markdown code blocks if present)
+      let cleanedResponse = response.trim();
+      if (cleanedResponse.startsWith("```")) {
+        cleanedResponse = cleanedResponse
+          .replace(/```json\n?/g, "")
+          .replace(/```\n?/g, "");
+      }
+
+      // Parse and validate
+      const parsed = JSON.parse(cleanedResponse);
+
+      if (!parsed.portionSize || !parsed.nutritionalValuesPer100g) {
+        throw new Error("Invalid nutrition structure: missing required fields");
+      }
+
+      return JSON.stringify(parsed);
+    } catch (error) {
+      console.error("Failed to generate/parse classic nutrition:", error);
+      throw error;
     } finally {
       await clonedSession.destroy();
     }
@@ -168,6 +117,26 @@ Requirements:
 
 Provide ONE improved healthy recipe with ingredient substitutions (lower in kcalories).
 
+Return ONLY valid JSON (no markdown, no code blocks, no explanation) matching this exact structure:
+{
+  "name": "Recipe Name",
+  "category": ["breakfast", "lunch", "snack", "dinner"],
+  "portionSize": 250,
+  "ingredients": [
+    {"quantity": 1.5, "unit": "cups", "name": "ingredient name"}
+  ],
+  "instructions": [
+    {"instruction": "Step description", "time": 120}
+  ],
+  "nutritionalValuesPer100g": {
+    "calories": 150,
+    "protein": 8,
+    "carbohydrates": 20,
+    "fat": 5,
+    "fiber": 3
+  }
+}
+
 Requirements:
 - Categorize the recipe into: breakfast, lunch, snack, dinner (can be multiple categories)
 - Use DECIMAL numbers for quantities (0.5, 0.25, 0.75), NOT fractions
@@ -178,14 +147,36 @@ Requirements:
 - Time estimates should be realistic and based on typical cooking/prep times`;
 
       console.log("Generating improved recipe...");
-      const response = await clonedSession.prompt(prompt, {
-        responseConstraint: this.recipeSchema,
-        omitResponseConstraintInput: true,
-        signal,
-      });
+      const response = await clonedSession.prompt(prompt, { signal });
       console.log("Received improved recipe");
 
-      return response; // Already valid JSON!
+      // Clean up response (remove markdown code blocks if present)
+      let cleanedResponse = response.trim();
+      if (cleanedResponse.startsWith("```")) {
+        cleanedResponse = cleanedResponse
+          .replace(/```json\n?/g, "")
+          .replace(/```\n?/g, "");
+      }
+
+      // Parse and validate
+      const parsed = JSON.parse(cleanedResponse);
+
+      // Validate required fields
+      if (
+        !parsed.name ||
+        !Array.isArray(parsed.category) ||
+        !parsed.portionSize ||
+        !Array.isArray(parsed.ingredients) ||
+        !Array.isArray(parsed.instructions) ||
+        !parsed.nutritionalValuesPer100g
+      ) {
+        throw new Error("Invalid recipe structure: missing required fields");
+      }
+
+      return JSON.stringify(parsed);
+    } catch (error) {
+      console.error("Failed to generate/parse improved recipe:", error);
+      throw error;
     } finally {
       await clonedSession.destroy();
     }
@@ -572,19 +563,48 @@ Provide ONLY the advice text, no introductions or explanations.`;
 
 Provide the nutritional values per 100g for a CLASSIC recipe using these ingredients (traditional cooking method, not healthy).
 
+Return ONLY valid JSON (no markdown, no code blocks, no explanation) matching this exact structure:
+{
+  "portionSize": 250,
+  "nutritionalValuesPer100g": {
+    "calories": 150,
+    "protein": 8,
+    "carbohydrates": 20,
+    "fat": 5,
+    "fiber": 3
+  }
+}
+
 Requirements:
 - Provide portionSize as the typical weight in grams for ONE serving
 - Provide nutritionalValuesPer100g (not per portion)`;
 
       console.log("Fetching classic leftover recipe nutritional values...");
-      const response = await clonedSession.prompt(prompt, {
-        responseConstraint: this.nutritionalValuesSchema,
-        omitResponseConstraintInput: true,
-        signal,
-      });
+      const response = await clonedSession.prompt(prompt, { signal });
       console.log("Received classic leftover nutritional values");
 
-      return response;
+      // Clean up response (remove markdown code blocks if present)
+      let cleanedResponse = response.trim();
+      if (cleanedResponse.startsWith("```")) {
+        cleanedResponse = cleanedResponse
+          .replace(/```json\n?/g, "")
+          .replace(/```\n?/g, "");
+      }
+
+      // Parse and validate
+      const parsed = JSON.parse(cleanedResponse);
+
+      if (!parsed.portionSize || !parsed.nutritionalValuesPer100g) {
+        throw new Error("Invalid nutrition structure: missing required fields");
+      }
+
+      return JSON.stringify(parsed);
+    } catch (error) {
+      console.error(
+        "Failed to generate/parse classic leftover nutrition:",
+        error
+      );
+      throw error;
     } finally {
       await clonedSession.destroy();
     }
@@ -601,6 +621,26 @@ Requirements:
 
 Provide ONE improved healthy recipe that uses as many of these ingredients as possible, with additional healthy ingredient suggestions (lower in kcalories).
 
+Return ONLY valid JSON (no markdown, no code blocks, no explanation) matching this exact structure:
+{
+  "name": "Recipe Name",
+  "category": ["breakfast", "lunch", "snack", "dinner"],
+  "portionSize": 250,
+  "ingredients": [
+    {"quantity": 1.5, "unit": "cups", "name": "ingredient name"}
+  ],
+  "instructions": [
+    {"instruction": "Step description", "time": 120}
+  ],
+  "nutritionalValuesPer100g": {
+    "calories": 150,
+    "protein": 8,
+    "carbohydrates": 20,
+    "fat": 5,
+    "fiber": 3
+  }
+}
+
 Requirements:
 - Try to use as many of the provided leftover ingredients as possible
 - You can suggest additional ingredients to complete the recipe, but prioritize using the leftovers
@@ -608,17 +648,42 @@ Requirements:
 - Use DECIMAL numbers for quantities (0.5, 0.25, 0.75), NOT fractions
 - Provide portionSize as the total weight in grams for ONE serving
 - Provide nutritionalValuesPer100g (not per portion)
-- Ensure ingredients match the portion size`;
+- Ensure ingredients match the portion size
+- For each instruction, provide time in seconds`;
 
       console.log("Generating improved leftover recipe...");
-      const response = await clonedSession.prompt(prompt, {
-        responseConstraint: this.recipeSchema,
-        omitResponseConstraintInput: true,
-        signal,
-      });
+      const response = await clonedSession.prompt(prompt, { signal });
       console.log("Received improved leftover recipe");
 
-      return response;
+      // Clean up response (remove markdown code blocks if present)
+      let cleanedResponse = response.trim();
+      if (cleanedResponse.startsWith("```")) {
+        cleanedResponse = cleanedResponse
+          .replace(/```json\n?/g, "")
+          .replace(/```\n?/g, "");
+      }
+
+      // Parse and validate
+      const parsed = JSON.parse(cleanedResponse);
+
+      // Validate required fields
+      if (
+        !parsed.name ||
+        !Array.isArray(parsed.category) ||
+        !parsed.portionSize ||
+        !Array.isArray(parsed.ingredients) ||
+        !Array.isArray(parsed.instructions) ||
+        !parsed.nutritionalValuesPer100g
+      ) {
+        throw new Error(
+          "Invalid leftover recipe structure: missing required fields"
+        );
+      }
+
+      return JSON.stringify(parsed);
+    } catch (error) {
+      console.error("Failed to generate/parse leftover recipe:", error);
+      throw error;
     } finally {
       await clonedSession.destroy();
     }
