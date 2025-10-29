@@ -32,7 +32,7 @@ function App() {
           </Routes>
         </WeekMealProvider>
       </UserProvider>
-      <ToastContainer />
+      <ToastContainer newestOnTop={true} />
     </BrowserRouter>
   );
 }
