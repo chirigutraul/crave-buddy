@@ -179,6 +179,26 @@ export function CookingTimerModal({
     }
   };
 
+  const handleFinish = () => {
+    // Stop any ongoing speech
+    ttsService.stop();
+
+    // Reset cooking state
+    setCurrentStepIndex(0);
+    setTimeRemaining(steps[0]?.time || 0);
+    setIsRunning(false);
+    setIsSpeaking(false);
+
+    // Clear timer interval
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    // Close modal
+    onOpenChange(false);
+  };
+
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -402,7 +422,7 @@ export function CookingTimerModal({
             {isLastStep && (
               <Button
                 size="lg"
-                onClick={() => onOpenChange(false)}
+                onClick={handleFinish}
                 className="bg-[#9ACD32] hover:bg-[#8AB622] text-white gap-2"
               >
                 Finish
