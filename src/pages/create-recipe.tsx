@@ -382,11 +382,6 @@ function CreateRecipe() {
           </div>
         </div>
         <div className="flex justify-end w-full items-center gap-4">
-          {savedRecipeId && (
-            <p className="text-green-600 font-medium">
-              Recipe saved successfully!
-            </p>
-          )}
           <Button
             onClick={saveRecipe}
             disabled={!generatedRecipe || isSaving || savedRecipeId !== null}
