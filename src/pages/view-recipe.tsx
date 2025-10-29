@@ -4,6 +4,7 @@ import RecipeLayout from "@/layouts/RecipeLayout";
 import RecipeCard from "@/components/RecipeCard";
 import { Button } from "@/components/ui/button";
 import { CheckboxListCard } from "@/components/CheckboxListCard";
+import { CookingTimerModal } from "@/components/CookingTimerModal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +23,7 @@ const ViewRecipe = () => {
   const navigate = useViewTransition();
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
+  const [cookingModalOpen, setCookingModalOpen] = useState(false);
 
   const handleExportMarkdown = () => {
     if (recipe) {
@@ -119,10 +121,11 @@ const ViewRecipe = () => {
             />
             <CheckboxListCard
               title="Preparation steps"
-              items={recipe.instructions}
+              items={recipe.instructions.map((step) => step.instruction)}
             />
             <Button
               size="lg"
+              onClick={() => setCookingModalOpen(true)}
               className="w-full bg-[#9ACD32] hover:bg-[#8AB622] text-white font-semibold py-6 text-lg"
             >
               Start cooking
@@ -130,6 +133,14 @@ const ViewRecipe = () => {
           </div>
         </div>
       </div>
+
+      {/* Cooking Timer Modal */}
+      <CookingTimerModal
+        open={cookingModalOpen}
+        onOpenChange={setCookingModalOpen}
+        steps={recipe.instructions}
+        recipeName={recipe.name}
+      />
     </RecipeLayout>
   );
 };

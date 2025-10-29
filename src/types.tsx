@@ -6,6 +6,11 @@ export interface Ingredient {
   name: string;
 }
 
+export interface PreparationStep {
+  instruction: string;
+  time: number; // time in seconds
+}
+
 export interface Recipe {
   id: number;
   name: string;
@@ -20,7 +25,7 @@ export interface Recipe {
     fiber: number;
   };
   ingredients: Ingredient[]; // Changed from string[] to Ingredient[]
-  instructions: string[];
+  instructions: PreparationStep[]; // Changed from string[] to PreparationStep[]
 }
 
 export interface RecipePair {
@@ -44,7 +49,7 @@ export interface PartialGeneratedRecipe {
   category?: MealTime[];
   portionSize?: number;
   ingredients?: Ingredient[];
-  instructions?: string[];
+  instructions?: PreparationStep[];
   nutritionalValuesPer100g?: {
     calories: number;
     protein: number;

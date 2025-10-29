@@ -41,12 +41,31 @@ function CreateRecipe() {
       { quantity: 1, unit: "piece", name: "zucchini, grated" },
     ],
     instructions: [
-      "Cook whole grain spaghetti according to package instructions.",
-      "In a pan, sauté onion and garlic until translucent.",
-      "Add ground turkey and cook until browned.",
-      "Stir in grated carrot and zucchini, cook for 5 minutes.",
-      "Pour in canned tomatoes and simmer for 20 minutes.",
-      "Serve sauce over whole grain spaghetti.",
+      {
+        instruction:
+          "Cook whole grain spaghetti according to package instructions.",
+        time: 600,
+      },
+      {
+        instruction: "In a pan, sauté onion and garlic until translucent.",
+        time: 180,
+      },
+      {
+        instruction: "Add ground turkey and cook until browned.",
+        time: 300,
+      },
+      {
+        instruction: "Stir in grated carrot and zucchini, cook for 5 minutes.",
+        time: 300,
+      },
+      {
+        instruction: "Pour in canned tomatoes and simmer for 20 minutes.",
+        time: 1200,
+      },
+      {
+        instruction: "Serve sauce over whole grain spaghetti.",
+        time: 60,
+      },
     ],
     nutritionalValuesPer100g: {
       calories: 100,
@@ -255,7 +274,9 @@ function CreateRecipe() {
                 />
                 <CheckboxList
                   title="Preparation Steps"
-                  items={(generatedRecipe || placeholderRecipe).instructions}
+                  items={(
+                    generatedRecipe || placeholderRecipe
+                  ).instructions.map((step) => step.instruction)}
                 />
               </>
             )}

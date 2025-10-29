@@ -39,11 +39,26 @@ function CreateLeftoverMeal() {
       { quantity: 1, unit: "tsp", name: "sesame oil" },
     ],
     instructions: [
-      "Heat a wok or large pan over medium-high heat.",
-      "Add vegetables and stir-fry for 3-4 minutes.",
-      "Add protein and brown rice, stir well.",
-      "Add low-sodium soy sauce and sesame oil.",
-      "Cook for another 2 minutes and serve hot.",
+      {
+        instruction: "Heat a wok or large pan over medium-high heat.",
+        time: 120,
+      },
+      {
+        instruction: "Add vegetables and stir-fry for 3-4 minutes.",
+        time: 210,
+      },
+      {
+        instruction: "Add protein and brown rice, stir well.",
+        time: 90,
+      },
+      {
+        instruction: "Add low-sodium soy sauce and sesame oil.",
+        time: 30,
+      },
+      {
+        instruction: "Cook for another 2 minutes and serve hot.",
+        time: 120,
+      },
     ],
     nutritionalValuesPer100g: {
       calories: 110,
@@ -256,7 +271,9 @@ function CreateLeftoverMeal() {
                 />
                 <CheckboxList
                   title="Preparation Steps"
-                  items={(generatedRecipe || placeholderRecipe).instructions}
+                  items={(
+                    generatedRecipe || placeholderRecipe
+                  ).instructions.map((step) => step.instruction)}
                 />
               </>
             )}

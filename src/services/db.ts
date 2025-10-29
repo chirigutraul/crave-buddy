@@ -54,6 +54,44 @@ export class CraveBuddyDB extends Dexie {
             }
           });
       });
+
+    // Version 4: Updated instructions to be an array of objects with instruction and time
+    this.version(4)
+      .stores({
+        users: "++id, name, age, height, sex, exercising, createdAt, updatedAt",
+        recipes: "++id, name, image, portionSize, createdAt, updatedAt",
+        weeklyPlans: "++id, name, meals, createdAt, updatedAt",
+        dailyCheckIns: "++id, date, hungerLevel",
+      })
+      .upgrade((tx) => {
+        // Migrate existing recipes to have instructions as objects with time
+        return tx
+          .table("recipes")
+          .toCollection()
+          .modify((recipe) => {
+            if (recipe.instructions && Array.isArray(recipe.instructions)) {
+              recipe.instructions = recipe.instructions.map(
+                (instruction: any) => {
+                  // If already an object with instruction and time, keep it
+                  if (
+                    typeof instruction === "object" &&
+                    instruction.instruction
+                  ) {
+                    return instruction;
+                  }
+                  // If it's a string, convert it to an object with a default time of 60 seconds
+                  if (typeof instruction === "string") {
+                    return {
+                      instruction: instruction,
+                      time: 60,
+                    };
+                  }
+                  return instruction;
+                }
+              );
+            }
+          });
+      });
   }
 }
 

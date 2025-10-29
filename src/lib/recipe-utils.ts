@@ -118,7 +118,7 @@ export const generateRecipeMarkdown = (recipe: Recipe): string => {
     .join("\n");
 
   const instructions = recipe.instructions
-    .map((step, index) => `${index + 1}. [ ] ${step}`)
+    .map((step, index) => `${index + 1}. [ ] ${step.instruction}`)
     .join("\n");
 
   const categories = recipe.category

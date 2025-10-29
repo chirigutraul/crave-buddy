@@ -36,7 +36,14 @@ export class PromptApiService implements PromptApiServiceInterface {
       },
       instructions: {
         type: "array",
-        items: { type: "string" },
+        items: {
+          type: "object",
+          properties: {
+            instruction: { type: "string" },
+            time: { type: "number" },
+          },
+          required: ["instruction", "time"],
+        },
       },
       nutritionalValuesPer100g: {
         type: "object",
@@ -166,7 +173,9 @@ Requirements:
 - Use DECIMAL numbers for quantities (0.5, 0.25, 0.75), NOT fractions
 - Provide portionSize as the total weight in grams for ONE serving
 - Provide nutritionalValuesPer100g (not per portion)
-- Ensure ingredients match the portion size`;
+- Ensure ingredients match the portion size
+- For each instruction, provide an approximate time in seconds for completing that step
+- Time estimates should be realistic and based on typical cooking/prep times`;
 
       console.log("Generating improved recipe...");
       const response = await clonedSession.prompt(prompt, {
