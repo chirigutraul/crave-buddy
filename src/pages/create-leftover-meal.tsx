@@ -310,17 +310,17 @@ function CreateLeftoverMeal() {
 
   return (
     <RecipeLayout>
-      <div className="h-full w-full p-8 rounded-2xl bg-neutral-50/90 border-1 border-neutral-400 shadow-xl drop-shadow-xl">
+      <div className="@container h-full w-full max-w-288 p-8 rounded-2xl bg-neutral-50/90 border-1 border-neutral-400 shadow-xl drop-shadow-xl">
         <h5 className="mb-4">Create a meal from leftover ingredients</h5>
         <div className="flex gap-16 justify-between">
           <div className="flex flex-col gap-4">
-            <div className="w-96">
+            <div className="w-full">
               <p className="mb-2">What ingredients do you have left?</p>
               <Textarea
                 value={leftoverIngredients}
                 onChange={(e) => setLeftoverIngredients(e.target.value)}
                 placeholder="E.g., chicken breast, rice, broccoli, carrots, soy sauce..."
-                className="h-32 mb-2"
+                className="h-48 mb-2"
               />
               <div className="flex justify-end">
                 <Button
@@ -339,22 +339,8 @@ function CreateLeftoverMeal() {
                 recipe={partialRecipe || generatedRecipe || placeholderRecipe}
               />
             )}
-            <p className="font-medium">
-              Results of smart swap: you reduced the calories by{" "}
-              {Math.round(
-                ((generatedRecipe || placeholderRecipe)
-                  .classicRecipeNutritionalValues.calories *
-                  (generatedRecipe || placeholderRecipe).portionSize) /
-                  100 -
-                  ((generatedRecipe || placeholderRecipe)
-                    .nutritionalValuesPer100g.calories *
-                    (generatedRecipe || placeholderRecipe).portionSize) /
-                    100
-              )}
-              kcal per portion and lowered the fats
-            </p>
           </div>
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col">
             {isGenerating ? (
               <>
                 <CheckboxListSkeleton title="Grocery List" />
