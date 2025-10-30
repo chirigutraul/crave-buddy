@@ -9,3 +9,9 @@
 # Netlify by default uses npm ci which skips optional dependencies
 [build.install]
   command = "npm install"
+
+# Redirect all routes to index.html for SPA routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
