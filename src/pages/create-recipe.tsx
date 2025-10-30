@@ -1,8 +1,6 @@
 import RecipeLayout from "../layouts/RecipeLayout";
 import { Textarea } from "@/components/ui/textarea";
-import RecipeComparison, {
-  RecipeComparisonSkeleton,
-} from "@/components/RecipeComparison";
+import RecipeComparison from "@/components/RecipeComparison";
 import type { Recipe, GeneratedRecipe, PartialGeneratedRecipe } from "@/types";
 import { CheckboxList, CheckboxListSkeleton } from "@/components/CheckboxList";
 import { Button } from "@/components/ui/button";
@@ -107,7 +105,8 @@ function CreateRecipe() {
     try {
       setIsGenerating(true);
       setSavedRecipeId(null); // Reset saved state when generating new recipe
-      setPartialRecipe({}); // Start with empty partial recipe
+      // Start with placeholder recipe to prevent layout shifts
+      setPartialRecipe(placeholderRecipe);
       setGeneratedRecipe(null); // Clear previous recipe
       console.time("⏱️ Total meal generation time");
 
@@ -135,7 +134,7 @@ function CreateRecipe() {
         .then((imageUrl) => {
           console.log("✅ Image loaded");
           setPartialRecipe((prev) => ({
-            ...prev,
+            ...(prev || placeholderRecipe),
             image: imageUrl,
           }));
         })
@@ -150,7 +149,7 @@ function CreateRecipe() {
           console.log("✅ Classic nutritional values loaded");
           const classicNutrition = JSON.parse(response);
           setPartialRecipe((prev) => ({
-            ...prev,
+            ...(prev || placeholderRecipe),
             portionSize: classicNutrition.portionSize,
             classicRecipeNutritionalValues:
               classicNutrition.nutritionalValuesPer100g,
@@ -187,7 +186,7 @@ function CreateRecipe() {
 
       // Update partial recipe with improved recipe data
       setPartialRecipe((prev) => ({
-        ...prev,
+        ...(prev || placeholderRecipe),
         ...improvedRecipe,
       }));
 
@@ -335,13 +334,9 @@ function CreateRecipe() {
                 </Button>
               </div>
             </div>
-            {isGenerating && !partialRecipe ? (
-              <RecipeComparisonSkeleton />
-            ) : (
-              <RecipeComparison
-                recipe={partialRecipe || generatedRecipe || placeholderRecipe}
-              />
-            )}
+            <RecipeComparison
+              recipe={partialRecipe || generatedRecipe || placeholderRecipe}
+            />
           </div>
           <div className="flex flex-col @5xl:justify-start">
             {isGenerating ? (
