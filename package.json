@@ -53,6 +53,9 @@
     "typescript-eslint": "^8.44.0",
     "vite": "npm:rolldown-vite@7.1.12"
   },
+  "optionalDependencies": {
+    "@rolldown/binding-linux-x64-gnu": "^1.0.0-beta.39"
+  },
   "overrides": {
     "vite": "npm:rolldown-vite@7.1.12"
   }
