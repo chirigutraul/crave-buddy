@@ -14,7 +14,7 @@ export function CheckboxList({ title, items, idPrefix }: CheckboxListProps) {
   return (
     <div className="space-y-2">
       <h5 className="text-2xl font-bold text-neutral-900">{title}</h5>
-      <div className="space-y-1 h-64 w-96 overflow-y-auto">
+      <div className="space-y-1 h-64 @5xl:w-96 w-72 overflow-y-auto">
         {items.map((item, index) => (
           <div key={index} className="flex space-x-3">
             <Checkbox
@@ -38,7 +38,7 @@ export function CheckboxListSkeleton({ title }: { title: string }) {
   return (
     <div className="space-y-2">
       <h5 className="text-2xl font-bold text-neutral-900">{title}</h5>
-      <div className="space-y-1 h-64 w-96 overflow-y-auto">
+      <div className="space-y-1 h-64 @5xl:w-96 w-72 overflow-y-auto">
         {[1, 2, 3, 4, 5].map((index) => (
           <div key={index} className="flex items-center space-x-3">
             <Skeleton className="h-5 w-5 rounded" />

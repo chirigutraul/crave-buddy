@@ -313,17 +313,17 @@ function CreateRecipe() {
 
   return (
     <RecipeLayout>
-      <div className="h-full w-full p-8 rounded-2xl bg-neutral-50/90 border-1 border-neutral-400 shadow-xl drop-shadow-xl">
+      <div className="@container h-full w-full max-w-288 p-8 rounded-2xl bg-neutral-50/90 border-1 border-neutral-400 shadow-xl drop-shadow-xl">
         <h5 className="mb-4">Start planning your meal</h5>
-        <div className="flex gap-16 justify-between">
+        <div className="flex flex-row @5xl:gap-8 gap-4 justify-between">
           <div className="flex flex-col gap-4">
-            <div className="w-96">
-              <p className="mb-2">What are you craving today?</p>
+            <div className="w-full">
+              <h6 className="mb-2">What are you craving today?</h6>
               <Textarea
                 value={cravings}
                 onChange={(e) => setCravings(e.target.value)}
                 placeholder="Write your cravings here.."
-                className="h-32 mb-2"
+                className="h-48 mb-2"
               />
               <div className="flex justify-end">
                 <Button
@@ -342,22 +342,8 @@ function CreateRecipe() {
                 recipe={partialRecipe || generatedRecipe || placeholderRecipe}
               />
             )}
-            <p className="font-medium">
-              Results of smart swap: you reduced the calories by{" "}
-              {Math.round(
-                ((generatedRecipe || placeholderRecipe)
-                  .classicRecipeNutritionalValues.calories *
-                  (generatedRecipe || placeholderRecipe).portionSize) /
-                  100 -
-                  ((generatedRecipe || placeholderRecipe)
-                    .nutritionalValuesPer100g.calories *
-                    (generatedRecipe || placeholderRecipe).portionSize) /
-                    100
-              )}
-              kcal per portion and lowered the fats
-            </p>
           </div>
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col @5xl:justify-start">
             {isGenerating ? (
               <>
                 <CheckboxListSkeleton title="Grocery List" />

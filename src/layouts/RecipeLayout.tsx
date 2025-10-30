@@ -55,9 +55,7 @@ const RecipeLayout = ({ children }: RecipeLayoutProps) => {
         <SidebarProvider>
           <RecipesSidebar />
           <SidebarTrigger />
-          <main className="pl-1 p-4 2xl:p-8 flex-1 overflow-hidden">
-            {children}
-          </main>
+          <main className="pl-0 py-7 flex-1 overflow-hidden">{children}</main>
         </SidebarProvider>
       </div>
     </div>

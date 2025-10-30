@@ -153,7 +153,9 @@ function RecipeCard({
       : [];
 
   const cardClassName =
-    size === "large" ? "w-full max-w-md py-6 gap-6" : "w-64 py-4 gap-4";
+    size === "large"
+      ? "w-full max-w-md py-6 gap-6"
+      : "@5xl:w-64 w-56 py-4 gap-4";
   const headerClassName = size === "large" ? "px-6" : "px-4";
   const contentClassName = size === "large" ? "px-6" : "px-4";
   const imageClassName =
@@ -234,7 +236,7 @@ function RecipeCardContentSkeleton() {
 
 export function RecipeCardSkeleton() {
   return (
-    <Card className="w-64 py-4 gap-4">
+    <Card className="@5xl:w-64 w-56 py-4 gap-4">
       <CardHeader className="px-4">
         <Skeleton className="w-full aspect-square rounded-lg" />
       </CardHeader>

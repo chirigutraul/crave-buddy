@@ -36,7 +36,7 @@ function RecipeComparison({ recipe }: RecipeComparisonProps) {
     !recipe.nutritionalValuesPer100g || !recipe.portionSize;
 
   return (
-    <div className="flex gap-4 items-center">
+    <div className="flex @5xl:gap-4 items-center">
       <RecipeCard
         recipe={classicRecipeForComparison}
         comparisonRecipe={improvedRecipe}
