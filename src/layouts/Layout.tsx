@@ -8,7 +8,7 @@ const Layout = ({ children }: LayoutProps) => {
   return (
     <div className="min-h-screen bg-neutral-50">
       <Navbar />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 max-w-[1512px] m-auto">{children}</main>
     </div>
   );
 };

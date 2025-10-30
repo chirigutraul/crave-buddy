@@ -7,6 +7,10 @@ import smartSwaps from "../assets/smart-swap.png";
 import howItWorks from "../assets/how-it-works.gif";
 import { Button } from "@/components/ui/button";
 import { useViewTransition } from "@/hooks/use-view-transition";
+import snipRegister from "../assets/snip-register.png";
+import snipNutriInfo from "../assets/snip-nutri-info.png";
+import snipMealGeneration from "../assets/snip-meal-generation.png";
+import snipCooking from "../assets/snip-cooking.png";
 
 function HeroSection() {
   const navigate = useViewTransition();
@@ -72,7 +76,7 @@ function Features() {
       picture: smartSwaps,
     },
     {
-      title: "Step by step preparation",
+      title: "Cook with timers & voice",
       picture: preparation,
     },
   ];
@@ -81,23 +85,33 @@ function Features() {
       id="features"
       className="flex flex-col items-center gap-8 py-8 px-16 h-screen"
     >
-      <h3>Meal preparation made simple.</h3>
-      <div className="flex flex-row gap-16 h-full items-center">
+      <div className="text-center">
+        <h3 className="mb-4">Meal preparation made simple.</h3>
+        <h5 className="max-w-2xl text-center text-gray-800">
+          AI suggests a lighter take on your meal and shows how it stacks up
+          against the classic.
+        </h5>
+      </div>
+      <div className="flex flex-row gap-8 2xl:gap-16 h-full items-center">
         {features.map((feature) => (
-          <div key={feature.title} className="flex flex-col gap-4">
-            <div>
-              <img
-                src={feature.picture}
-                alt={feature.title}
-                className="mx-auto mb-4 rounded-lg max-h-64"
-              />
-              <h5 className="font-semibold text-gray-800">{feature.title}</h5>
-            </div>
+          <div key={feature.title} className="w-48 lg:w-64 2xl:w-96">
+            <img
+              src={feature.picture}
+              alt={feature.title}
+              className="mx-auto mb-4 rounded-lg h-48 lg:h-64 2xl:h-96 aspect-video object-cover"
+            />
+            <h5 className="font-semibold text-center text-gray-800">
+              {feature.title}
+            </h5>
           </div>
         ))}
       </div>
-      <Button variant="default" onClick={() => navigate("/create-recipe")}>
-        Get started
+      <Button
+        variant="default"
+        onClick={() => navigate("/create-recipe")}
+        size="lg"
+      >
+        <h6>Get started</h6>
       </Button>
     </section>
   );
@@ -114,12 +128,46 @@ function HowItWorks() {
         CraveBuddy leverages the power of Chrome’s built-in AI API’s. All your
         cravings remain private.
       </h5>
-      <div className="flex justify-center items-center h-full">
+      <div className="flex flex-col gap-8 items-center h-full w-full">
         <img
           src={howItWorks}
           alt="How it works"
-          className="mx-auto mb-4 rounded-lg max-h-96"
+          className="rounded-lg max-h-96"
         />
+        <div className="flex gap-4 h-full">
+          <div>
+            <h5>1. Tell us about yourself</h5>
+            <img
+              src={snipRegister}
+              alt="register screenshot"
+              className="w-full object-fit"
+            />
+          </div>
+          <div>
+            <h5>2. Find out your needs</h5>
+            <img
+              src={snipNutriInfo}
+              alt="nutritional information screenshot"
+              className="w-full object-fit"
+            />
+          </div>
+          <div>
+            <h5>3. Generate healthier recipes</h5>
+            <img
+              src={snipMealGeneration}
+              alt="meal generation screenshot"
+              className="w-full  object-fit"
+            />
+          </div>
+          <div>
+            <h5>4. Build a weekly plan</h5>
+            <img
+              src={snipCooking}
+              alt="cooking screenshot"
+              className="w-full  object-fit"
+            />
+          </div>
+        </div>
       </div>
     </section>
   );
