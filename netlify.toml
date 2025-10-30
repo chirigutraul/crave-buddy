@@ -1,0 +1,11 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Force npm install (not npm ci) to ensure optional dependencies are installed
+# Netlify by default uses npm ci which skips optional dependencies
+[build.install]
+  command = "npm install"
