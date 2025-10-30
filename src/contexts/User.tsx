@@ -1,4 +1,11 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+} from "react";
 import type { ReactNode } from "react";
 import type { User as UserType } from "../types";
 import { userService } from "../services/user.service";
@@ -21,7 +28,9 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+
+  // Derive isLoggedIn from user state to avoid redundant state and extra re-renders
+  const isLoggedIn = useMemo(() => user !== null, [user]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -29,7 +38,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
         const fetchedUser = await userService.getUser();
         if (fetchedUser) {
           setUser(fetchedUser);
-          setIsLoggedIn(true);
         }
       } catch (error) {
         console.error("Error fetching user:", error);
@@ -41,57 +49,68 @@ export function UserProvider({ children }: { children: ReactNode }) {
     fetchUser();
   }, []);
 
-  const createUser = async (
-    userData: Omit<User, "id" | "createdAt" | "updatedAt">
-  ) => {
-    try {
-      await userService.createUser(userData);
-      const newUser = await userService.getUser();
-      if (newUser) {
-        setUser(newUser);
-        setIsLoggedIn(true);
+  const createUser = useCallback(
+    async (userData: Omit<User, "id" | "createdAt" | "updatedAt">) => {
+      try {
+        await userService.createUser(userData);
+        const newUser = await userService.getUser();
+        if (newUser) {
+          setUser(newUser);
+        }
+      } catch (error) {
+        console.error("Error creating user:", error);
+        throw error;
       }
-    } catch (error) {
-      console.error("Error creating user:", error);
-      throw error;
-    }
-  };
+    },
+    []
+  );
 
-  const updateUser = async (userData: Partial<User>) => {
-    try {
-      if (!user || !user.id) {
-        throw new Error("No user to update");
+  const updateUser = useCallback(
+    async (userData: Partial<User>) => {
+      try {
+        if (!user || !user.id) {
+          throw new Error("No user to update");
+        }
+        await userService.updateUser(user.id, userData);
+        const updatedUser = await userService.getUser();
+        if (updatedUser) {
+          setUser(updatedUser);
+        }
+      } catch (error) {
+        console.error("Error updating user:", error);
+        throw error;
       }
-      await userService.updateUser(user.id, userData);
-      const updatedUser = await userService.getUser();
-      if (updatedUser) {
-        setUser(updatedUser);
-      }
-    } catch (error) {
-      console.error("Error updating user:", error);
-      throw error;
-    }
-  };
+    },
+    [user]
+  );
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       if (user && user.id) {
         await userService.deleteUser(user.id);
       }
       setUser(null);
-      setIsLoggedIn(false);
     } catch (error) {
       console.error("Error logging out:", error);
       throw error;
     }
-  };
+  }, [user]);
+
+  // Memoize the context value to prevent unnecessary re-renders of all consumers
+  const contextValue = useMemo(
+    () => ({
+      user,
+      loading,
+      isLoggedIn,
+      createUser,
+      updateUser,
+      logout,
+    }),
+    [user, loading, isLoggedIn, createUser, updateUser, logout]
+  );
 
   return (
-    <UserContext.Provider
-      value={{ user, loading, isLoggedIn, createUser, updateUser, logout }}
-    >
-      {children}
-    </UserContext.Provider>
+    <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>
   );
 }
 

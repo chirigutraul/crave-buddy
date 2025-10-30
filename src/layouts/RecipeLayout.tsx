@@ -20,7 +20,9 @@ const RecipeLayout = ({ children }: RecipeLayoutProps) => {
     }
   }, [user, loading, navigate]);
 
-  if (loading) {
+  // Show loading screen while loading OR if no user (prevents flash during navigation)
+  // This ensures smooth transition - we keep showing loading until user exists or navigation completes
+  if (loading || !user) {
     return (
       <div
         className="min-h-screen bg-cover bg-center bg-no-repeat relative flex items-center justify-center"
@@ -36,10 +38,6 @@ const RecipeLayout = ({ children }: RecipeLayoutProps) => {
         </div>
       </div>
     );
-  }
-
-  if (!user) {
-    return null;
   }
 
   return (
