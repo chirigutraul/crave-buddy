@@ -229,12 +229,12 @@ export class WeeklyPlanService {
           if (recipeId !== null) {
             const recipe = recipeMap.get(recipeId);
             if (recipe) {
-              dayNutrition.calories += recipe.nutritionalValues.calories;
-              dayNutrition.protein += recipe.nutritionalValues.protein;
+              dayNutrition.calories += recipe.nutritionalValuesPer100g.calories;
+              dayNutrition.protein += recipe.nutritionalValuesPer100g.protein;
               dayNutrition.carbohydrates +=
-                recipe.nutritionalValues.carbohydrates;
-              dayNutrition.fat += recipe.nutritionalValues.fat;
-              dayNutrition.fiber += recipe.nutritionalValues.fiber;
+                recipe.nutritionalValuesPer100g.carbohydrates;
+              dayNutrition.fat += recipe.nutritionalValuesPer100g.fat;
+              dayNutrition.fiber += recipe.nutritionalValuesPer100g.fiber;
             }
           }
         });

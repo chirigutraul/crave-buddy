@@ -45,7 +45,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     userData: Omit<User, "id" | "createdAt" | "updatedAt">
   ) => {
     try {
-      const userId = await userService.createUser(userData);
+      await userService.createUser(userData);
       const newUser = await userService.getUser();
       if (newUser) {
         setUser(newUser);
