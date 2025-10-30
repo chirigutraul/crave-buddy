@@ -16,6 +16,7 @@ import {
   getCurrentWeight,
 } from "@/lib/utils";
 import { showError, showInfo, showSuccess } from "@/lib/toast";
+import { toast } from "react-toastify";
 
 function MyWeek() {
   const {
@@ -151,6 +152,13 @@ function MyWeek() {
       console.log("Recipes count:", recipes.length);
       console.log("Daily calorie target:", dailyCalorieTarget);
 
+      // Show persistent progress toast
+      const generatingToastId = showInfo("Generating weekly plan...", {
+        autoClose: false,
+        closeOnClick: false,
+        draggable: false,
+      });
+
       const generatedPlan =
         await promptApiServiceRef.current.generateWeeklyPlan(
           recipes,
@@ -211,6 +219,8 @@ function MyWeek() {
       });
       console.log("================================\n");
 
+      // Dismiss progress toast before success
+      toast.dismiss(generatingToastId);
       showSuccess("Weekly plan generated successfully!");
     } catch (error) {
       console.error("Error generating weekly plan:", error);

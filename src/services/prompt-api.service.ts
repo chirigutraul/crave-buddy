@@ -247,91 +247,7 @@ Requirements:
       const snackIds = Object.keys(recipesByMealTime.snack);
       const dinnerIds = Object.keys(recipesByMealTime.dinner);
 
-      // Define schema for weekly plan structure
-      const weeklyPlanSchema = {
-        type: "object",
-        properties: {
-          Monday: {
-            type: "object",
-            properties: {
-              breakfast: { type: "string" },
-              lunch: { type: "string" },
-              snack: { type: "string" },
-              dinner: { type: "string" },
-            },
-            required: ["breakfast", "lunch", "snack", "dinner"],
-          },
-          Tuesday: {
-            type: "object",
-            properties: {
-              breakfast: { type: "string" },
-              lunch: { type: "string" },
-              snack: { type: "string" },
-              dinner: { type: "string" },
-            },
-            required: ["breakfast", "lunch", "snack", "dinner"],
-          },
-          Wednesday: {
-            type: "object",
-            properties: {
-              breakfast: { type: "string" },
-              lunch: { type: "string" },
-              snack: { type: "string" },
-              dinner: { type: "string" },
-            },
-            required: ["breakfast", "lunch", "snack", "dinner"],
-          },
-          Thursday: {
-            type: "object",
-            properties: {
-              breakfast: { type: "string" },
-              lunch: { type: "string" },
-              snack: { type: "string" },
-              dinner: { type: "string" },
-            },
-            required: ["breakfast", "lunch", "snack", "dinner"],
-          },
-          Friday: {
-            type: "object",
-            properties: {
-              breakfast: { type: "string" },
-              lunch: { type: "string" },
-              snack: { type: "string" },
-              dinner: { type: "string" },
-            },
-            required: ["breakfast", "lunch", "snack", "dinner"],
-          },
-          Saturday: {
-            type: "object",
-            properties: {
-              breakfast: { type: "string" },
-              lunch: { type: "string" },
-              snack: { type: "string" },
-              dinner: { type: "string" },
-            },
-            required: ["breakfast", "lunch", "snack", "dinner"],
-          },
-          Sunday: {
-            type: "object",
-            properties: {
-              breakfast: { type: "string" },
-              lunch: { type: "string" },
-              snack: { type: "string" },
-              dinner: { type: "string" },
-            },
-            required: ["breakfast", "lunch", "snack", "dinner"],
-          },
-        },
-        required: [
-          "Monday",
-          "Tuesday",
-          "Wednesday",
-          "Thursday",
-          "Friday",
-          "Saturday",
-          "Sunday",
-        ],
-      };
+      // Reverted: no JSON schema for weekly plan
 
       const prompt = `Create a 7-day meal plan (Monday through Sunday).
 
@@ -367,18 +283,38 @@ VALIDATION CHECKLIST:
 - Every snack ID must be in [${snackIds.join(", ")}]
 - Every dinner ID must be in [${dinnerIds.join(", ")}]
 
-Try to create variety across the week when possible.`;
+RESPONSE RULES:
+- Return ONLY valid JSON. No prose, no markdown fences.
+- Each value MUST be a NUMBER recipe ID. Do NOT include names, grams, or kcal.
+- Use every day from Monday to Sunday and include all four meals (breakfast, lunch, snack, dinner).
+- Prefer variety across the week.
 
-      console.log("Generating weekly meal plan with structured output...");
-      const response = await weeklyPlanSession.prompt(prompt, {
-        responseConstraint: weeklyPlanSchema,
-        omitResponseConstraintInput: true,
-        signal,
-      });
-      console.log("Received structured weekly plan response");
+EXAMPLE OUTPUT (IDs only):
+{
+  "Monday":   { "breakfast": 11, "lunch": 24, "snack": 7,  "dinner": 35 },
+  "Tuesday":  { "breakfast": 12, "lunch": 25, "snack": 9,  "dinner": 36 },
+  "Wednesday":{ "breakfast": 13, "lunch": 26, "snack": 10, "dinner": 37 },
+  "Thursday": { "breakfast": 11, "lunch": 27, "snack": 8,  "dinner": 38 },
+  "Friday":   { "breakfast": 12, "lunch": 24, "snack": 9,  "dinner": 39 },
+  "Saturday": { "breakfast": 13, "lunch": 25, "snack": 7,  "dinner": 35 },
+  "Sunday":   { "breakfast": 11, "lunch": 26, "snack": 10, "dinner": 36 }
+}`;
 
-      // Parse the AI response - no need for manual cleanup!
-      const aiPlan = JSON.parse(response);
+      console.log("Generating weekly meal plan...");
+      const response = await weeklyPlanSession.prompt(prompt, { signal });
+      console.log("Received weekly plan response");
+
+      // Minimal cleanup to guard against accidental prose
+      let cleaned = response.trim();
+      if (cleaned.startsWith("```")) {
+        cleaned = cleaned.replace(/```json\n?/g, "").replace(/```\n?/g, "");
+      }
+      if (!cleaned.startsWith("{")) {
+        const s = cleaned.indexOf("{");
+        const e = cleaned.lastIndexOf("}");
+        if (s !== -1 && e !== -1 && e > s) cleaned = cleaned.slice(s, e + 1);
+      }
+      const aiPlan = JSON.parse(cleaned);
 
       // Create maps for quick lookup
       const recipeIdMap = new Map<number, Recipe>();
@@ -471,8 +407,8 @@ Try to create variety across the week when possible.`;
         // Process each meal time
         (["breakfast", "lunch", "snack", "dinner"] as const).forEach(
           (mealTime) => {
-            const recipeIdStr = meals[mealTime];
-            const recipeId = parseInt(recipeIdStr, 10);
+            const raw = meals[mealTime];
+            const recipeId = typeof raw === "number" ? raw : parseInt(raw, 10);
             const recipe = recipeIdMap.get(recipeId);
 
             // Validate that the recipe exists and belongs to the correct category
