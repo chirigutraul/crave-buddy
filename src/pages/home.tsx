@@ -121,7 +121,7 @@ function HowItWorks() {
   return (
     <section
       id="about"
-      className="flex flex-col items-center gap-8 py-8 px-16 h-screen"
+      className="flex flex-col items-center gap-8 py-8 px-16 min-h-screen"
     >
       <h3>How it works?</h3>
       <h5 className="max-w-3xl text-center text-gray-800">
