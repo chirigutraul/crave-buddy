@@ -75,32 +75,11 @@ const ViewRecipe = () => {
 
   return (
     <RecipeLayout>
-      <div className="h-full w-full p-8 rounded-2xl bg-neutral-50/90 border-1 border-neutral-400 shadow-xl drop-shadow-xl">
-        {/* Header with Share Button */}
-        <div className="flex justify-end items-center mb-6">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2">
-                <Share className="h-4 w-4" />
-                Share
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={handleExportMarkdown}
-                className="gap-2 cursor-pointer"
-              >
-                <FileDown className="h-4 w-4" />
-                Export as Markdown
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
+      <div className="h-full w-full max-w-288 p-8 rounded-2xl bg-neutral-50/90 border-1 border-neutral-400 shadow-xl drop-shadow-xl">
         {/* Main content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2">
+        <div className="flex flex-col lg:flex-row justify-between gap-8">
           {/* Left column - Recipe Card */}
-          <div>
+          <div className="w-full">
             <RecipeCard
               recipe={recipe}
               title={recipe.name}
@@ -114,7 +93,27 @@ const ViewRecipe = () => {
           </div>
 
           {/* Right column - Grocery list and Preparation steps */}
-          <div className="space-y-6">
+          <div className="space-y-6 w-full">
+            {/* Header with Share Button */}
+            <div className="flex justify-end items-center mb-6 w-full max-w-128">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Share className="h-4 w-4" />
+                    Share
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={handleExportMarkdown}
+                    className="gap-2 cursor-pointer"
+                  >
+                    <FileDown className="h-4 w-4" />
+                    Export as Markdown
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
             <CheckboxListCard
               title="Grocery list"
               items={recipe.ingredients.map(formatIngredient)}
@@ -126,7 +125,7 @@ const ViewRecipe = () => {
             <Button
               size="lg"
               onClick={() => setCookingModalOpen(true)}
-              className="w-full bg-[#9ACD32] hover:bg-[#8AB622] text-white font-semibold py-6 text-lg"
+              className="w-full max-w-128 bg-[#9ACD32] hover:bg-[#8AB622] text-white font-semibold py-6 text-lg"
             >
               Start cooking
             </Button>

@@ -18,7 +18,7 @@ export function CheckboxListCard({
   const prefix = idPrefix || title.toLowerCase().replace(/\s+/g, "-");
 
   return (
-    <Card className="bg-white/95 backdrop-blur-sm">
+    <Card className="bg-white/95 backdrop-blur-sm @5xl:max-w-128 w-full">
       <CardHeader className="gap-0">
         <div className="flex items-center justify-between">
           <h5 className="font-bold text-neutral-800">{title}</h5>
