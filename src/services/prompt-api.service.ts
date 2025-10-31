@@ -232,12 +232,35 @@ Requirements:
       };
 
       // Create simple data structure: mealTime -> recipeId -> {name, kcal per 100g}
+      const validMealTimes = ["breakfast", "lunch", "snack", "dinner"] as const;
+
       recipes.forEach((recipe) => {
+        // Skip recipes with missing required fields
+        if (
+          !recipe ||
+          !recipe.id ||
+          !recipe.category ||
+          !Array.isArray(recipe.category) ||
+          !recipe.nutritionalValuesPer100g
+        ) {
+          console.warn("Skipping recipe with missing required fields:", recipe);
+          return;
+        }
+
         recipe.category.forEach((mealTime) => {
-          recipesByMealTime[mealTime][recipe.id] = {
-            name: recipe.name,
-            kcal: recipe.nutritionalValuesPer100g.calories,
-          };
+          // Only process if mealTime is a valid key in recipesByMealTime
+          // Ensure mealTime is a valid string and exists as a key
+          if (
+            mealTime &&
+            typeof mealTime === "string" &&
+            validMealTimes.includes(mealTime as any) &&
+            recipesByMealTime[mealTime]
+          ) {
+            recipesByMealTime[mealTime][recipe.id] = {
+              name: recipe.name,
+              kcal: recipe.nutritionalValuesPer100g.calories,
+            };
+          }
         });
       });
 
